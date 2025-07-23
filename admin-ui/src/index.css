@@ -1,0 +1,53 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+@theme{
+    --color-lightgray:'#F9FAFB';
+    --color-themecolor:'#0c7ff2';
+}
+
+body{
+    font-family: "Inter", sans-serif;
+}
+
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield; /* Firefox */
+}
+
+.ag-theme-alpine .ag-root-wrapper {
+  background-color: white;
+  border: 1px solid #e0e0e0 !important;
+  box-shadow: none !important;
+  border-radius: 16px !important;
+}
+
+.ag-theme-alpine .ag-header {
+  color: #fff !important;
+  font-size: 16px;
+  font-weight: 400;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.ag-theme-alpine .ag-paging-panel {
+  min-height: 58px !important;
+  height: 58px !important;
+  align-items: center !important;
+  font-size: 16px;
+  background: #f5f5f5 !important; /* orange-50 */
+  border: none !important;
+}
+
+.ag-theme-alpine .ag-row {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.ag-theme-alpine .ag-row:hover {
+  background-color: #f5f5f5;
+}
+

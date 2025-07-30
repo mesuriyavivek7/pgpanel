@@ -30,12 +30,12 @@ const adminRoutes = [
     {
       label:'Employees',
       icon:IdCardLanyard,
-      link:'/employees'
+      link:'/admin/employees'
     },
     {
       label:'Account Managers',
       icon:ShieldUser,
-      link:'/acmanagers'
+      link:'/admin/accountmanagers'
     }
 ]
 

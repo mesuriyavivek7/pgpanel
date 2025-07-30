@@ -147,3 +147,28 @@ export const updateCustomerDetails = async (req, res, next) =>{
         next(err)
     }
 }
+
+
+export const changeStatus = async (req, res, next) =>{
+    try{
+        const {customerId} = req.params
+
+        const {status} = req.body
+
+        if(!customerId || status===undefined) return res.status(400).json({message:"Please provide customer id and status",success:false})
+
+        const customer = await CUSTOMER.findById(customerId)
+
+        if(!customer) return res.status(404).json({message:"Customer not found.",success:false})
+
+        customer.status = status
+
+        await customer.save()
+
+        return res.status(200).json({message:"Customer status changed successfully",success:true})
+
+
+    }catch(err){
+        next(err)
+    }
+}

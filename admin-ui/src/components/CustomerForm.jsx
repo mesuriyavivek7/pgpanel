@@ -8,11 +8,10 @@ import { ChevronLeft, LoaderCircle } from "lucide-react";
 import { toast } from "react-toastify";
 import { getAllBranch } from '../services/branchService';
 import { getRoomByBranchId } from '../services/roomService';
-import { createCustomer } from '../services/customerService';
+import { createCustomer, updateCustomer } from '../services/customerService';
 
 
 function CustomerForm({selectedCustomer, onClose}) {
-   
   const [loading,setLoading] = useState(false)
   const [branches,setBranches] = useState([])
   const [rooms,setRooms] = useState([])
@@ -36,6 +35,21 @@ function CustomerForm({selectedCustomer, onClose}) {
        room:''
     }
   })
+
+  useEffect(()=>{
+    if(selectedCustomer) {
+      reset({
+        customer_name:selectedCustomer.customer_name,
+        deposite_amount:selectedCustomer.deposite_amount,
+        mobile_no:selectedCustomer.mobile_no,
+        joining_date:new Date(selectedCustomer.joining_date).toISOString().split("T")[0],
+        branch:selectedCustomer.branch._id,
+        room:selectedCustomer.room._id
+      })
+      setSelectedBranch(selectedCustomer.branch._id)
+      setSelectedRoom(selectedCustomer.room._id)
+    }
+  },[selectedCustomer])
 
   const handleGetAllBranch = async ()=>{
       try{
@@ -67,6 +81,7 @@ function CustomerForm({selectedCustomer, onClose}) {
 
 
   const handleAddCustomer = async (customerData)=>{
+    setLoading(true)
     try{
        const response = await createCustomer(customerData)
        onClose(true)
@@ -74,7 +89,23 @@ function CustomerForm({selectedCustomer, onClose}) {
     }catch(err){
         console.log(err)
         toast.error(err?.message)
+    }finally{
+      setLoading(false)
     }
+  }
+
+  const handleEditCustomer = async (customerData) => {
+     setLoading(true)
+     try{
+       const response = await updateCustomer(selectedCustomer._id,customerData)
+       onClose(true)
+       toast.success("Customer details updated successfully.")
+     }catch(err){
+       console.log(err)
+       toast.error(err?.message)
+     }finally{
+       setLoading(false)
+     }
   }
 
   return (
@@ -82,9 +113,9 @@ function CustomerForm({selectedCustomer, onClose}) {
         <div className='flex w-xl flex-col gap-4 bg-white rounded-2xl p-4'>
            <div className="flex items-center gap-2">
             <ChevronLeft size={28} onClick={()=>onClose(false)} className="cursor-pointer"></ChevronLeft>
-            <h1 className="text-2xl font-semibold">Add Customer</h1>
+            <h1 className="text-2xl font-semibold">{selectedCustomer ? "Edit Customer" : "Add Customer"}</h1>
            </div>
-           <form onSubmit={handleSubmit(handleAddCustomer)} className='flex flex-col gap-4'>
+           <form onSubmit={handleSubmit(selectedCustomer ? handleEditCustomer : handleAddCustomer)} className='flex flex-col gap-4'>
              <div className='flex flex-col gap-2'>
                 <label>Customer Name <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
@@ -126,6 +157,7 @@ function CustomerForm({selectedCustomer, onClose}) {
                  <div className='flex flex-col'>
                  <select 
                   {...register("branch",{onChange: (e) => setSelectedBranch(e.target.value)})}
+                  value={selectedBranch}
                   className='p-2 border border-neutral-300 rounded-md outline-none'>
                      <option value={''}>--- Select Branch ---</option>
                      {
@@ -142,6 +174,7 @@ function CustomerForm({selectedCustomer, onClose}) {
                  <div className='flex flex-col'>
                  <select 
                   {...register("room", {onChange: (e) => setSelectedRoom(e.target.value)})}
+                  value={selectedRoom}
                   className='p-2 border border-neutral-300 rounded-md outline-none'>
                      <option value={''}>--- Select Room ---</option>
                      {
@@ -170,7 +203,8 @@ function CustomerForm({selectedCustomer, onClose}) {
                 {
                   loading ? 
                   <LoaderCircle className="animate-spin"></LoaderCircle> :
-                  "Submit"
+                  selectedCustomer ? "Save" 
+                  : "Submit"
                 }
              </button>
           </div>

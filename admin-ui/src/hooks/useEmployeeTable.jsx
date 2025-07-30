@@ -1,14 +1,12 @@
 import { useEffect, useState, } from "react";
 import Tooltip from '@mui/material/Tooltip';
-import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { sliceString } from "../helper";
 
-import { changeCustomerStatus, getAllCustomer } from "../services/customerService";
-
 //Importing images
 import ADMIN from '../assets/admin.png'
-import BOY from '../assets/boy.png'
+import CHEF from '../assets/chef.png'
+import WORKER from '../assets/worker.png'
 import BRANCH from '../assets/branch.png'
 import PHONE from '../assets/call.png'
 import CALENDAR from '../assets/calendar.png'
@@ -20,75 +18,64 @@ import { capitalise } from "../helper";
 import { UserPen } from 'lucide-react';
 import { Minus } from 'lucide-react';
 import { Check } from 'lucide-react';
+import { getAllEmployee } from "../services/employeeService";
 
+export const useEmployeeTable = (handleOpenForm) => {
+    const [rows, setRows] = useState([])
+    const [loading, setLoading] = useState(false)
+   
 
-export const useCustomerTable = (handleOpenForm) =>{
-    const [rows,setRows] = useState([])
-    const [loading , setLoading] = useState(false)
-    const navigate = useNavigate()
-
-
-    const handleGetAllCustomers = async () =>{
-       try{
-         setLoading(true)
-         const data = await getAllCustomer()
-         setRows(data)
-       }catch(err){
-         console.log(err)
-         toast.error(err?.message)
-       }finally{
-        setLoading(false)
-       }
-    } 
+    const handleGetAllEmployee = async (searchQuery) =>{
+        try{
+            setLoading(true)
+            const data = await getAllEmployee(searchQuery)
+            setRows(data)
+        }catch(err){
+            console.log(err)
+            toast.error(err?.message)
+        }finally{
+            setLoading(false)
+        }
+    }
 
     useEffect(()=>{
-      handleGetAllCustomers()
+       handleGetAllEmployee()
     },[])
 
-    const handleChangeCustomerStatus = async (customerId, status) =>{
-      setLoading(true)
-      try{
-        const data = await changeCustomerStatus(customerId, status)
-        await handleGetAllCustomers()
-        toast.success("Customer status changed successfully.")
-      }catch(err){
+    const handleChangeEmployeeStatus = async () =>{
 
-        toast.error(err?.message || "Something went wrong.")
-      }finally{
-        setLoading(false)
-      }
     }
-  
+    
     const columns = [
         {
             headerName: 'Full Name',
-            field: 'customer_name',
+            field: 'employee_name',
             minWidth: 220,
             cellRenderer: (params) => (
               <div className="flex items-center w-full h-full">
                  <div className="flex items-center gap-3">
-                   <img src={BOY} alt="vendor" className="w-9 h-9 rounded-full" />
+                   <img src={params.data.employee_type==="Co-Worker"?WORKER:CHEF} alt="vendor" className="w-9 h-9 rounded-full" />
                    <span>{capitalise(params.value)}</span>
                  </div>
               </div>
             ),
-          },
-          {
+        },
+        {
             headerName: 'Mobile No',
             field: 'mobile_no',
             minWidth: 200,
             cellRenderer: (params) => (
               <div className="flex w-full h-full items-center">
-               <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
                 <img src={PHONE} alt="phone" className="w-7 h-7 rounded-full" />
                 <span>{params.value}</span>
-               </div>
+                </div>
               </div>
             ),
-          },
-          {
-            headerName: 'Deposite Amount',
-            field: 'deposite_amount',
+        },
+        {
+            headerName: 'Salary',
+            field: 'salary',
             minWidth: 200,
             flex: 1,
             cellRenderer: (params) => (
@@ -98,22 +85,21 @@ export const useCustomerTable = (handleOpenForm) =>{
                 </div>
               </div>
             ),
-          },
-          {
-            headerName: 'Room No',
-            field: 'room.room_id',
-            minWidth: 160,
+        },
+        {
+            headerName: 'Employee Type',
+            field: 'employee_type',
+            minWidth: 200,
             flex: 1,
-            valueGetter: (params) => params.data.room?.room_id,
             cellRenderer: (params) => (
               <div className="flex items-center w-full h-full">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-lg">{params.value}</span>
-                 </div>
+                 <span className="font-medium">{params.value}</span>
+                </div>
               </div>
             ),
-          },
-          {
+        },
+        {
             headerName: 'Branch',
             field: 'branch.branch_name',
             minWidth: 260,
@@ -129,22 +115,8 @@ export const useCustomerTable = (handleOpenForm) =>{
                 </Tooltip>
              </div>
             ),
-          },
-          {
-            headerName: 'Joining Date',
-            field: 'joining_date',
-            minWidth: 200,
-            flex: 1,
-            cellRenderer: (params) => (
-              <div className="flex items-center w-full h-full">
-                <div className="flex items-center gap-2">
-                  <img src={CALENDAR} alt="calendar" className="w-7 h-7" />
-                  <span className="font-medium">{formatDate(params.value)}</span>
-                </div>
-              </div>
-            ),
-          },
-          {
+        },
+        {
             headerName: 'Added By',
             field: 'added_by.full_name',
             minWidth: 200,
@@ -161,8 +133,22 @@ export const useCustomerTable = (handleOpenForm) =>{
               </div>
               </div>
             ),
-          },
-          {
+        },
+        {
+            headerName: 'Created At',
+            field:'createdAt',
+            minWidth: 200,
+            flex: 1,
+            cellRenderer: (params) => (
+                <div className="flex items-center w-full h-full">
+                  <div className="flex items-center gap-2">
+                    <img src={CALENDAR} alt="calendar" className="w-7 h-7" />
+                    <span className="font-medium">{formatDate(params.value)}</span>
+                  </div>
+                </div>
+            ),
+        },
+        {
             headerName: 'Action',
             field: 'action',
             minWidth: 200,
@@ -180,7 +166,6 @@ export const useCustomerTable = (handleOpenForm) =>{
                   <Tooltip title={isActive ? 'Inactivate' : 'Activate'}>
                     <button
                       disabled={loading}
-                      onClick={()=>handleChangeCustomerStatus(params.data._id, !params.data.status)}
                       className={`flex cursor-pointer p-1 justify-center items-center rounded-full ${
                         isActive ? 'bg-red-500' : 'bg-green-500'
                       } text-white`}
@@ -192,8 +177,8 @@ export const useCustomerTable = (handleOpenForm) =>{
                 </div>
               );
             },
-          },        
+        }
     ]
 
-    return {rows, columns, loading, refetch : handleGetAllCustomers}
+   return {rows, columns, loading, refetch : handleGetAllEmployee}
 }

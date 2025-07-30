@@ -1,5 +1,4 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom';
 import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import CustomerForm from '../../components/CustomerForm';
@@ -14,7 +13,6 @@ import Breadcrumb from '../../components/Breadcrumb';
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 function Customer() {
-  const { loading, rows, columns, refetch} = useCustomerTable()
   const [openForm,setOpenForm] = useState(false)
   const [selectedCustomer,setSelectedCustomer] = useState(null)
   
@@ -22,6 +20,7 @@ function Customer() {
     setSelectedCustomer(customer)
     setOpenForm(true)
   }
+  const { loading, rows, columns, refetch} = useCustomerTable(handleOpenForm)
 
   const handleCloseForm = (refresh) =>{
     setSelectedCustomer(null)

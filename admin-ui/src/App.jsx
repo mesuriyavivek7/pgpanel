@@ -12,10 +12,13 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import Branch from './pages/admin/Branch';
 import BranchPreview from './pages/admin/BranchPreview';
 import Customer from './pages/admin/Customer';
+import Employee from './pages/admin/Employee';
+import Accountmanager from './pages/admin/Accountmanager';
 
 //Import Account components
 import AccountLayout from './layouts/AccountLayout';
 import AccountDashboard from './pages/account/AccountDashboard';
+
 
 
 
@@ -43,6 +46,8 @@ function App() {
           <Route path='branches' element={<Branch></Branch>}></Route>
           <Route path='branches/preview' element={<BranchPreview></BranchPreview>}></Route>
           <Route path='customers' element={<Customer></Customer>}></Route>
+          <Route path='employees' element={<Employee></Employee>}></Route>
+          <Route path='accountmanagers' element={<Accountmanager></Accountmanager>}></Route>
         </Route>
    
        {/* Account Routes */}

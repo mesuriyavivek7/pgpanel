@@ -21,6 +21,14 @@ const accountSchema = new mongoose.Schema({
           /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/,
           'Please fill a valid email address'
         ]
+    },
+    branch: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Branch'
+    },
+    added_by:{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:'Admin'
     }
 },{timestamps:true})
 

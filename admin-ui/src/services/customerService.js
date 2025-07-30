@@ -52,7 +52,20 @@ export const getCustomerByBranchId = async (branchId, searchQuery) =>{
 //For update customer details
 export const updateCustomer = async (customerId, customerData) =>{
     try{
-        const response = await api.put(`/customer/${customerId}`)
+        const response = await api.put(`/customer/${customerId}`, customerData)
+        return response.data.data
+    }catch(err){
+        console.log(err)
+        const errMessage = err?.response?.data?.message || "Something went wrong."
+        throw new Error(errMessage)
+    }
+}
+
+//For change customer status
+export const changeCustomerStatus = async (customerId, status) =>{
+    try{
+        const response = await api.put(`/customer/status/${customerId}`,{status})
+        return response.data.data
     }catch(err){
         console.log(err)
         const errMessage = err?.response?.data?.message || "Something went wrong."

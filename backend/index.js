@@ -11,6 +11,8 @@ import authRoute from './routes/auth.js'
 import branchRoute from './routes/branch.js'
 import roomRoute from './routes/room.js'
 import customerRoute from './routes/customer.js'
+import employeeRoute from './routes/employee.js'
+import acmanagerRoute from './routes/account.js'
 
 // Get the current file's path
 const __filename = fileURLToPath(import.meta.url);
@@ -90,6 +92,8 @@ app.use('/api/auth',authRoute)
 app.use('/api/branch',branchRoute)
 app.use('/api/room',roomRoute)
 app.use('/api/customer',customerRoute)
+app.use('/api/employee',employeeRoute)
+app.use('/api/acmanager',acmanagerRoute)
 
  // Middleware to catch errors
  app.use((err, req, res, next) => {

@@ -1,10 +1,25 @@
 import { Plus, Search } from 'lucide-react'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
+import { getAllBranch } from '../services/branchService'
 
-function Breadcrumb({searchQuery,setSearchQuery,onClick}) {
+function Breadcrumb({selectedBranch, setSelectedBranch ,searchQuery,setSearchQuery,onClick}) {
 
   const location = useLocation()
+  const [branch, setBranch] = useState([])
+
+  useEffect(()=>{
+    const handleGetAllBranch = async ()=>{
+      try{
+        const data = await getAllBranch()
+        setBranch(data)
+      }catch(err){
+        console.log(err)
+      }
+   }
+
+   handleGetAllBranch()
+  },[])
 
   const getContent = () =>{
     switch(location.pathname){
@@ -40,7 +55,15 @@ function Breadcrumb({searchQuery,setSearchQuery,onClick}) {
              <Search className='text-gray-500' size={20}></Search>
              <input value={searchQuery} onChange={(e)=> setSearchQuery(e.target.value)} type='text' className='flex-1 outline-none' placeholder='Search customers'></input>
           </div>
-          <button onClick={()=>onClick()} className='md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white'>
+          <select onChange={(e)=>setSelectedBranch(e.target.value)} value={selectedBranch} className='p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none'>
+             <option value={''}>All Branch</option>
+             {
+              branch.map((item, index) =>(
+                <option key={index} value={item._id}>{item.branch_name}</option>
+              ))
+             }
+          </select>
+          <button onClick={()=>onClick()} className='md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-2xl text-white'>
             <span className='hidden md:block'>Add New Customer</span>
             <Plus className='block md:hidden'></Plus>
           </button>
@@ -55,6 +78,14 @@ function Breadcrumb({searchQuery,setSearchQuery,onClick}) {
              <Search className='text-gray-500' size={20}></Search>
              <input value={searchQuery} onChange={(e)=> setSearchQuery(e.target.value)} type='text' className='flex-1 outline-none' placeholder='Search employees'></input>
           </div>
+          <select onChange={(e)=>setSelectedBranch(e.target.value)} value={selectedBranch} className='p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none'>
+             <option value={''}>All Branch</option>
+             {
+              branch.map((item, index) =>(
+                <option key={index} value={item._id}>{item.branch_name}</option>
+              ))
+             }
+          </select>
           <button onClick={()=>onClick()} className='md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white'>
             <span className='hidden md:block'>Add New Employee</span>
             <Plus className='block md:hidden'></Plus>
@@ -70,6 +101,14 @@ function Breadcrumb({searchQuery,setSearchQuery,onClick}) {
              <Search className='text-gray-500' size={20}></Search>
              <input value={searchQuery} onChange={(e)=> setSearchQuery(e.target.value)} type='text' className='flex-1 outline-none' placeholder='Search account managers'></input>
           </div>
+          <select onChange={(e)=>setSelectedBranch(e.target.value)} value={selectedBranch} className='p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none'>
+             <option value={''}>All Branch</option>
+             {
+              branch.map((item, index) =>(
+                <option key={index} value={item._id}>{item.branch_name}</option>
+              ))
+             }
+          </select>
           <button onClick={()=>onClick()} className='md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white'>
             <span className='hidden md:block'>Add New AcManager</span>
             <Plus className='block md:hidden'></Plus>

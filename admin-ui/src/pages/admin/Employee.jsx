@@ -17,6 +17,7 @@ function Employee() {
   const [openForm, setOpenForm] = useState(false)
   const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedBranch, setSelectedBranch] = useState('')
 
   const handleOpenForm = (employee = null) =>{
     setSelectedEmployee(employee)
@@ -32,13 +33,13 @@ function Employee() {
   }
 
   useEffect(()=>{
-     refetch(searchQuery)
-  },[searchQuery])
+     refetch(searchQuery, selectedBranch)
+  },[searchQuery, selectedBranch])
 
   return (
     <div className='flex w-full h-full flex-col gap-8'>
       {openForm && <EmployeeForm selectedEmployee={selectedEmployee} onClose={handleCloseForm}></EmployeeForm>}
-      <Breadcrumb searchQuery={searchQuery} setSearchQuery={setSearchQuery} onClick={()=>handleOpenForm(null)}></Breadcrumb>
+      <Breadcrumb selectedBranch={selectedBranch} setSelectedBranch={setSelectedBranch} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onClick={()=>handleOpenForm(null)}></Breadcrumb>
 
       <div className='h-full ag-theme-alpine w-full'>
       <AgGridReact

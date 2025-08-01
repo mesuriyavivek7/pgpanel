@@ -17,7 +17,6 @@ export const createAcManager = async (acmanagerData) =>{
 export const getAllAcmanager = async (searchQuery="", branch="") =>{
    try{
      const response = await api.get(`/acmanager?searchQuery=${searchQuery}&branch=${branch}`)
-     console.log(response.data)
      return response.data.data.map((item)=> ({...item,id:item._id}))
    }catch(err){
      console.log(err)
@@ -36,4 +35,16 @@ export const updateAcmanager = async (acmanagerData, acmanagerId) => {
       const errMessage = err?.response?.data?.message
       throw new Error(errMessage)
     }
+}
+
+//For change acmanager status
+export const changeAcmanagerStatus = async (acmanagerId, status) =>{
+   try{
+      const response = await api.put(`/acmanager/status/${acmanagerId}`, {status})
+      return response.data.data
+   }catch(err){
+      console.log(err)
+      const errMessage = err?.response?.data?.message
+      throw new Error(errMessage)
+   }
 }

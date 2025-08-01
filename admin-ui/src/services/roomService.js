@@ -37,3 +37,14 @@ export const updateRoom = async (roomId,roomData) =>{
 }
 
 
+//For get room details by id
+export const getRoomById = async (roomId) =>{
+   try{
+    const response = await api.get(`/room/${roomId}`)
+    return response.data.data
+   }catch(err){
+    console.log(err)
+    const errMessage = err?.response?.data?.message || "Something went wrong."
+    throw new Error(errMessage)
+   }
+}

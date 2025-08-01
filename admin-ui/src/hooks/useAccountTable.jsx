@@ -18,7 +18,7 @@ import { capitalise } from "../helper";
 import { UserPen } from 'lucide-react';
 import { Minus } from 'lucide-react';
 import { Check } from 'lucide-react';
-import { getAllAcmanager } from "../services/accountService";
+import { changeAcmanagerStatus, getAllAcmanager } from "../services/accountService";
 
 
 
@@ -26,10 +26,10 @@ export const useAccountTable = (handleOpenForm) => {
     const [rows, setRows] = useState([])
     const [loading, setLoading] = useState(false)
 
-    const handleGetAllAccountManager = async (searchQuery)=>{
+    const handleGetAllAccountManager = async (searchQuery, branch)=>{
         setLoading(true)
         try{
-          const data = await getAllAcmanager(searchQuery)
+          const data = await getAllAcmanager(searchQuery, branch)
           setRows(data)
         }catch(err){
           console.log(err)
@@ -43,8 +43,17 @@ export const useAccountTable = (handleOpenForm) => {
       handleGetAllAccountManager()
     },[])
 
-    const handleChangeAccountManagerStatus = async () =>{
-
+    const handleChangeAccountManagerStatus = async (acmanagerId, status) =>{
+        setLoading(true)
+        try{
+          const data = await changeAcmanagerStatus(acmanagerId,status)
+          await handleGetAllAccountManager()
+          toast.success("Acmanager status changed sucessfully.")
+        }catch(err){
+          toast.error(err?.message)
+        }finally{
+          setLoading(false)
+        }
     }
 
     const columns = [
@@ -147,12 +156,13 @@ export const useAccountTable = (handleOpenForm) => {
             <div className="flex items-center w-full h-full">
              <div className="flex items-center gap-2">
               <Tooltip title="Edit">
-                <button className="flex cursor-pointer bg-blue-500 text-white p-1 justify-center items-center rounded-full">
+                <button onClick={()=>handleOpenForm(params.data)} className="flex cursor-pointer bg-blue-500 text-white p-1 justify-center items-center rounded-full">
                   <UserPen size={18} />
                 </button>
               </Tooltip>
               <Tooltip title={isActive ? 'Inactivate' : 'Activate'}>
                 <button
+                  onClick={()=>handleChangeAccountManagerStatus(params.data._id, !params.data.status)}
                   disabled={loading}
                   className={`flex cursor-pointer p-1 justify-center items-center rounded-full ${
                     isActive ? 'bg-red-500' : 'bg-green-500'

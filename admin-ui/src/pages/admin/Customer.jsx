@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { AgGridReact } from 'ag-grid-react';
 import { ModuleRegistry, AllCommunityModule } from 'ag-grid-community';
 import CustomerForm from '../../components/CustomerForm';
@@ -15,6 +15,8 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 function Customer() {
   const [openForm,setOpenForm] = useState(false)
   const [selectedCustomer,setSelectedCustomer] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedBranch,setSelectedBranch] = useState('')
   
   const handleOpenForm = (customer=null) =>{
     setSelectedCustomer(customer)
@@ -28,9 +30,14 @@ function Customer() {
     if(refresh) refetch()
   }
 
+  useEffect(()=>{
+    refetch(searchQuery, selectedBranch)
+  },[searchQuery, selectedBranch])
+
+
   return (
     <div className='flex w-full h-full flex-col gap-8'>
-      <Breadcrumb onClick={()=>handleOpenForm(null)}></Breadcrumb>
+      <Breadcrumb selectedBranch={selectedBranch} setSelectedBranch={setSelectedBranch} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onClick={()=>handleOpenForm(null)}></Breadcrumb>
       {openForm && <CustomerForm selectedCustomer={selectedCustomer} onClose={handleCloseForm}></CustomerForm>}
       <div className='h-full ag-theme-alpine w-full'>
       <AgGridReact

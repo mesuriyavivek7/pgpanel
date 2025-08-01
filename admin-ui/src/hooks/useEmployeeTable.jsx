@@ -18,17 +18,17 @@ import { capitalise } from "../helper";
 import { UserPen } from 'lucide-react';
 import { Minus } from 'lucide-react';
 import { Check } from 'lucide-react';
-import { getAllEmployee } from "../services/employeeService";
+import { changeEmployeeStatus, getAllEmployee } from "../services/employeeService";
 
 export const useEmployeeTable = (handleOpenForm) => {
     const [rows, setRows] = useState([])
     const [loading, setLoading] = useState(false)
    
 
-    const handleGetAllEmployee = async (searchQuery) =>{
+    const handleGetAllEmployee = async (searchQuery, branch) =>{
         try{
             setLoading(true)
-            const data = await getAllEmployee(searchQuery)
+            const data = await getAllEmployee(searchQuery, branch)
             setRows(data)
         }catch(err){
             console.log(err)
@@ -42,8 +42,17 @@ export const useEmployeeTable = (handleOpenForm) => {
        handleGetAllEmployee()
     },[])
 
-    const handleChangeEmployeeStatus = async () =>{
-
+    const handleChangeEmployeeStatus = async (employeeId, status) =>{
+       setLoading(true)
+       try{
+         const data = await changeEmployeeStatus(employeeId, status)
+         await handleGetAllEmployee()
+         toast.success('Employee status changed successfully.')
+       }catch(err){
+         toast.error(err?.message)
+       }finally{
+        setLoading(false)
+       }
     }
     
     const columns = [
@@ -166,6 +175,7 @@ export const useEmployeeTable = (handleOpenForm) => {
                   <Tooltip title={isActive ? 'Inactivate' : 'Activate'}>
                     <button
                       disabled={loading}
+                      onClick={()=>handleChangeEmployeeStatus(params.data._id, !params.data.status)}
                       className={`flex cursor-pointer p-1 justify-center items-center rounded-full ${
                         isActive ? 'bg-red-500' : 'bg-green-500'
                       } text-white`}

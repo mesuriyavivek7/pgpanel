@@ -48,7 +48,7 @@ export const createCustomer = async (req, res, next) =>{
 
 export const getAllCustomer = async (req, res, next) => {
     try {
-      const { searchQuery, branch } = req.query;
+      const { searchQuery, branch, room } = req.query;
   
       const filter = {};
   
@@ -58,6 +58,10 @@ export const getAllCustomer = async (req, res, next) => {
   
       if (branch) {
         filter.branch = branch;
+      }
+
+      if (room) {
+        filter.room = room
       }
   
       const customers = await CUSTOMER.find(filter)
@@ -161,8 +165,15 @@ export const changeStatus = async (req, res, next) =>{
 
         if(!customer) return res.status(404).json({message:"Customer not found.",success:false})
 
+        const room = await ROOM.findById(customer.room)
+
+        if(!room) return res.status(200).json({message:"Customer room is missing.",success:false})
+
+        room.filled = room.filled - 1 
+
         customer.status = status
 
+        await room.save()
         await customer.save()
 
         return res.status(200).json({message:"Customer status changed successfully",success:true})
@@ -172,3 +183,4 @@ export const changeStatus = async (req, res, next) =>{
         next(err)
     }
 }
+

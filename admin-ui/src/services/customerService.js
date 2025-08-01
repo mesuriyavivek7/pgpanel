@@ -14,9 +14,9 @@ export const createCustomer = async (customerData) =>{
 }
 
 //For get all customer 
-export const getAllCustomer = async (searchQuery="", branch="") =>{
+export const getAllCustomer = async (searchQuery="", branch="", room="") =>{
     try{
-        const response = await api.get(`/customer?searchQuery=${searchQuery}&branch=${branch}`)
+        const response = await api.get(`/customer?searchQuery=${searchQuery}&branch=${branch}&room=${room}`)
         return response.data.data.map((item)=> ({...item,id:item._id}))
     }catch(err){
         console.log(err)

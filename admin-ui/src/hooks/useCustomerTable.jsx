@@ -22,16 +22,16 @@ import { Minus } from 'lucide-react';
 import { Check } from 'lucide-react';
 
 
-export const useCustomerTable = (handleOpenForm) =>{
+export const useCustomerTable = (handleOpenForm, room) =>{
     const [rows,setRows] = useState([])
     const [loading , setLoading] = useState(false)
     const navigate = useNavigate()
 
 
-    const handleGetAllCustomers = async () =>{
+    const handleGetAllCustomers = async (searchQuery="", branch="", room="") =>{
        try{
          setLoading(true)
-         const data = await getAllCustomer()
+         const data = await getAllCustomer(searchQuery, branch, room)
          setRows(data)
        }catch(err){
          console.log(err)
@@ -42,7 +42,7 @@ export const useCustomerTable = (handleOpenForm) =>{
     } 
 
     useEffect(()=>{
-      handleGetAllCustomers()
+      handleGetAllCustomers("","",room)
     },[])
 
     const handleChangeCustomerStatus = async (customerId, status) =>{

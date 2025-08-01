@@ -80,9 +80,26 @@ export const getRoomByBranchId = async (req, res, next) =>{
 
        if(!branch) return res.status(404).json({message:"Branch not found.",success:false})
 
-       const rooms = await ROOM.find({branch:branchId})
+       const rooms = await ROOM.find({branch:branchId}).populate('branch')
 
        return res.status(200).json({message:"Rooms retrived successfuly.",success:false,data:rooms})
+
+    }catch(err){
+        next(err)
+    }
+}
+
+export const getRoomById = async (req, res, next) =>{
+    try{
+       const {roomId} = req.params
+
+       if(!roomId) return res.status(400).json({message:"Please provide room id.",success:false})
+
+       const room = await ROOM.findById(roomId).populate('branch')
+
+       if(!room) return res.status(404).json({message:"Room not found.",success:false})
+
+       return res.status(200).json({message:"Room details retrived successfully.",success:true,data:room})
 
     }catch(err){
         next(err)

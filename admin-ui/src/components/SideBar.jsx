@@ -45,6 +45,7 @@ function SideBar({showSideBar}) {
   const isActive = (label) =>{
      if((location.pathname==='/admin' || location.pathname==='/account') && label==='Dashboard') return true
      if(location.pathname.includes(label.toLowerCase())) return true
+     if(location.pathname.includes("accountmanagers") && label === "Account Managers") return true
 
      return false
 

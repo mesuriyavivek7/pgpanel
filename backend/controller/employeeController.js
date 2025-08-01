@@ -85,3 +85,28 @@ export const updateEmployee = async (req, res, next) =>{
         next(err)
     }
 }
+
+export const changeEmployeeStatus = async (req, res, next) =>{
+    try{
+        const {employeeId} = req.params 
+
+        const {status} = req.body
+
+        console.log(status)
+
+        if(!employeeId || status===undefined) return res.status(400).json({message:"Please provide all required fields.",success:false})
+
+        const employee = await EMPLOYEE.findById(employeeId)
+
+        if(!employee) return res.status(400).json({message:"Employee is not found.",success:false})
+
+        employee.status = status 
+
+        await employee.save()
+
+        return res.status(200).json({message:"Employee status changed successfully.",success:true})
+
+    }catch(err){
+        next(err)
+    }
+}

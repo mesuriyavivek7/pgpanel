@@ -13,6 +13,7 @@ export const createEmployee = async (employeeData) =>{
 
 //For get all employee
 export const getAllEmployee = async (searchQuery="", branch="") =>{
+    console.log('branch---->',branch)
     try{
         const response = await api.get(`/employee?searchQuery=${searchQuery}&branch=${branch}`)
         return response.data.data.map((item)=> ({...item,id:item._id}))
@@ -27,6 +28,18 @@ export const getAllEmployee = async (searchQuery="", branch="") =>{
 export const updateEmployee = async (employeeId, employeeData) => {
     try{
         const response = await api.put(`/employee/${employeeId}`, employeeData)
+        return response.data.data
+    }catch(err){
+        console.log(err)
+        const errMessage = err?.response?.data?.message || "Something went wrong."
+        throw new Error(errMessage)
+    }
+}
+
+//For change status of employee
+export const changeEmployeeStatus = async (employeeId, status) =>{
+    try{
+        const response = await api.put(`/employee/status/${employeeId}`, {status})
         return response.data.data
     }catch(err){
         console.log(err)

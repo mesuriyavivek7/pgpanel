@@ -50,20 +50,50 @@ export const createAccountManager = async (req, res, next) =>{
 
 export const getAllAcmanager = async (req, res, next) =>{
     try{
-        const {searchQuery, branch} = req.query 
+        const {searchQuery = '', branch = ''} = req.query 
 
-        const filter = {};
+       const mappings = await LOGINMAPPING.find({userType:"Account"})
+       .populate({
+         path:'mongoid',
+         model:"Account",
+         populate:[
+            {
+                path:'branch',
+                model:'Branch'
+            },
+            {
+                path:"added_by",
+                model:"Admin",
+                select: 'full_name email createdAt updatedAt'
+            }
+         ]
+       }).select('status mongoid')
 
-        if(searchQuery) filter.full_name = { $regax: searchQuery, $option: 'i'};
+       const filtered = mappings
+       .filter((item) => {
+         const nameMatch = item.mongoid?.full_name
+           ?.toLowerCase()
+           .includes(searchQuery.toLowerCase());
+ 
+         const branchMatch = branch
+           ? item.mongoid?.branch?._id?.toString() === branch
+           : true;
+ 
+         return nameMatch && branchMatch;
+       })
+       .map((item) => {
+         const account = item.mongoid?.toObject(); // Convert mongoose doc to plain object
+ 
+         if (!account) return null;
+ 
+         return {
+           ...account,
+           status: item.status,
+         };
+       })
+       .filter(Boolean); // remove nulls
 
-        if(branch) filter.branch = branch
-
-        const acmanager = await ACCOUNT.find(filter)
-        .populate('branch')
-        .populate('added_by')
-        .sort({createdAt:-1})
-
-        return res.status(200).json({message:"All acmanager retrived successfully.",success:true,data:acmanager})
+       return res.status(200).json({message:"All acmanager retrived successfully.",success:true,data:filtered})
         
     }catch(err){
         next(err)
@@ -105,6 +135,29 @@ export const updateAcManager = async (req, res, next) =>{
         await acmanager.save()
 
         return res.status(200).json({message:"Acmanager details updated successfully.",success:true, data:acmanager})
+
+    }catch(err){
+        next(err)
+    }
+}
+
+export const changeAcmanagerStatus = async (req, res, next) =>{
+    try{
+        const {acmanagerId} = req.params
+
+        const {status} = req.body
+
+        if(!acmanagerId || status===undefined) return res.status(400).json({message:"Please provide all required fields",success:false})
+
+        const acmanager = await LOGINMAPPING.findOne({mongoid:acmanagerId})
+
+        if(!acmanager) return res.status(404).json({message:"Acmanager not found.",success:false})
+
+        acmanager.status = status
+
+        await acmanager.save()
+
+        return res.status(200).json({message:"Acmanager status changed successfully.",success:true})
 
     }catch(err){
         next(err)

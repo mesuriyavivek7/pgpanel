@@ -8,15 +8,17 @@ import "ag-grid-community/styles/ag-theme-alpine.css"; // Or any other theme
 
 import { useAccountTable } from "../../hooks/useAccountTable";
 import Breadcrumb from "../../components/Breadcrumb";
+import AccountForm from "../../components/AccountForm";
 
 function Accountmanager() {
   const [openForm, setOpenForm] = useState(false);
   const [selectedAcmanager, setSelectedAcmanager] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedBranch,setSelectedBranch] = useState('')
 
   const handleOpenForm = (acmanager = null) => {
     setSelectedAcmanager(acmanager);
-    setOpenForm(false);
+    setOpenForm(true);
   };
 
   const { rows, loading, columns, refetch } = useAccountTable(handleOpenForm);
@@ -24,12 +26,19 @@ function Accountmanager() {
   const handleCloseForm = (refresh = false) => {
     setSelectedAcmanager(null);
     setOpenForm(false);
-    if (refresh) refetch(searchQuery);
+    if (refresh) refetch();
   };
+
+  useEffect(()=>{
+    refetch(searchQuery, selectedBranch)
+  }, [searchQuery, selectedBranch])
 
   return (
     <div className="flex w-full h-full flex-col gap-8">
+      {openForm && <AccountForm selectedAccount={selectedAcmanager} onClose={handleCloseForm}></AccountForm>}
       <Breadcrumb
+        selectedBranch={selectedBranch}
+        setSelectedBranch={setSelectedBranch}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         onClick={() => handleOpenForm(null)}

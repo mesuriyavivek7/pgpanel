@@ -29,6 +29,7 @@ function CustomerForm({selectedCustomer, onClose}) {
     defaultValues: {
        customer_name:'',
        deposite_amount:0,
+       rent_amount:0,
        mobile_no:'',
        joining_date:new Date().toISOString().split("T")[0],
        branch:'',
@@ -41,6 +42,7 @@ function CustomerForm({selectedCustomer, onClose}) {
       reset({
         customer_name:selectedCustomer.customer_name,
         deposite_amount:selectedCustomer.deposite_amount,
+        rent_amount:selectedCustomer.rent_amount,
         mobile_no:selectedCustomer.mobile_no,
         joining_date:new Date(selectedCustomer.joining_date).toISOString().split("T")[0],
         branch:selectedCustomer.branch._id,
@@ -150,6 +152,18 @@ function CustomerForm({selectedCustomer, onClose}) {
                   placeholder="Enter deposite amount"
                   ></input>
                   {errors.deposite_amount && <span className='text-sm text-red-500'>{errors.deposite_amount.message}</span>}
+                </div>
+             </div>
+             <div className='flex flex-col gap-2'>
+                <label>Rent Amount <span className='text-sm text-red-500'>*</span></label>
+                <div className='flex flex-col'>
+                  <input 
+                  type='number'
+                  {...register("rent_amount",{ valueAsNumber: true })}
+                  className="p-2 border border-neutral-300 rounded-md outline-none"
+                  placeholder="Enter deposite amount"
+                  ></input>
+                  {errors.rent_amount && <span className='text-sm text-red-500'>{errors.rent_amount.message}</span>}
                 </div>
              </div>
              <div className='flex flex-col gap-2'>

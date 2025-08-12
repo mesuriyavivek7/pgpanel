@@ -115,6 +115,92 @@ function Breadcrumb({selectedBranch, setSelectedBranch ,searchQuery,setSearchQue
           </button>
         </div>
       </div>
+
+      case '/admin/rents':
+        return <div className='flex justify-between items-center w-full'>
+          <h1 className='text-2xl md:text-3xl font-semibold'>Pending Rents</h1>
+        <div className='flex items-center gap-2'>
+          <div className='border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-48 md:w-72  flex items-center gap-2'>
+             <Search className='text-gray-500' size={20}></Search>
+             <input value={searchQuery} onChange={(e)=> setSearchQuery(e.target.value)} type='text' className='flex-1 outline-none' placeholder='Search customer'></input>
+          </div>
+          <select onChange={(e)=>setSelectedBranch(e.target.value)} value={selectedBranch} className='p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none'>
+             <option value={''}>All Branch</option>
+             {
+              branch.map((item, index) =>(
+                <option key={index} value={item._id}>{item.branch_name}</option>
+              ))
+             }
+          </select>
+        </div>
+        </div>
+
+      case '/admin/salary':
+          return <div className='flex justify-between items-center w-full'>
+            <h1 className='text-2xl md:text-3xl font-semibold'>Employee Salary</h1>
+          <div className='flex items-center gap-2'>
+            <div className='border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-48 md:w-72  flex items-center gap-2'>
+               <Search className='text-gray-500' size={20}></Search>
+               <input value={searchQuery} onChange={(e)=> setSearchQuery(e.target.value)} type='text' className='flex-1 outline-none' placeholder='Search employee'></input>
+            </div>
+            <select onChange={(e)=>setSelectedBranch(e.target.value)} value={selectedBranch} className='p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none'>
+               <option value={''}>All Branch</option>
+               {
+                branch.map((item, index) =>(
+                  <option key={index} value={item._id}>{item.branch_name}</option>
+                ))
+               }
+            </select>
+            <button onClick={()=>onClick()} className='md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white'>
+              <span className='hidden md:block'>Create Salary</span>
+            </button>
+          </div>
+          </div>
+
+      case '/admin/inventory':
+        return <div className='flex justify-between items-center w-full'>
+            <h1 className='text-2xl md:text-3xl font-semibold'>Inventory</h1>
+          <div className='flex items-center gap-2'>
+            <div className='border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-48 md:w-72  flex items-center gap-2'>
+               <Search className='text-gray-500' size={20}></Search>
+               <input value={searchQuery} onChange={(e)=> setSearchQuery(e.target.value)} type='text' className='flex-1 outline-none' placeholder='Search inventory'></input>
+            </div>
+            <select onChange={(e)=>setSelectedBranch(e.target.value)} value={selectedBranch} className='p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none'>
+               <option value={''}>All Branch</option>
+               {
+                branch.map((item, index) =>(
+                  <option key={index} value={item._id}>{item.branch_name}</option>
+                ))
+               }
+            </select>
+            <button onClick={()=>onClick()} className='md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-2xl text-white'>
+              <span className='hidden md:block'>Create Inventory</span>
+            </button>
+          </div>
+          </div>
+
+      case '/admin/monthlybill':
+        return <div className='flex justify-between items-center w-full'>
+            <h1 className='text-2xl md:text-3xl font-semibold'>Monthly Bills</h1>
+          <div className='flex items-center gap-2'>
+            <div className='border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-48 md:w-72  flex items-center gap-2'>
+               <Search className='text-gray-500' size={20}></Search>
+               <input value={searchQuery} onChange={(e)=> setSearchQuery(e.target.value)} type='text' className='flex-1 outline-none' placeholder='Search bill'></input>
+            </div>
+            <select onChange={(e)=>setSelectedBranch(e.target.value)} value={selectedBranch} className='p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none'>
+               <option value={''}>All Branch</option>
+               {
+                branch.map((item, index) =>(
+                  <option key={index} value={item._id}>{item.branch_name}</option>
+                ))
+               }
+            </select>
+            <button onClick={()=>onClick()} className='md:p-2 p-1.5 bg-blue-500 transition-all duration-300 text-sm md:text-base hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-2xl text-white'>
+              <span className='hidden md:block'>Create Bill</span>
+            </button>
+          </div>
+          </div>
+
     }
   }
 

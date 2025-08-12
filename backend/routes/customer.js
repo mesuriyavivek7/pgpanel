@@ -1,6 +1,6 @@
 import express from 'express'
 import { verifyToken, verifyAdmin } from '../middleware/verifyUser.js'
-import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, updateCustomerDetails } from '../controller/customerController.js'
+import { changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId, getPendingCustomerRentList, updateCustomerDetails } from '../controller/customerController.js'
 
 const app = express.Router()
 
@@ -21,6 +21,9 @@ app.put('/:customerId', verifyToken, updateCustomerDetails)
 
 //For change customer status
 app.put('/status/:customerId', verifyToken, changeStatus)
+
+//For get pending customer rents
+app.get('/pending-rent', verifyToken, getPendingCustomerRentList)
 
 
 export default app

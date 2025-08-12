@@ -72,3 +72,15 @@ export const changeCustomerStatus = async (customerId, status) =>{
         throw new Error(errMessage)
     }
 }
+
+//For get customer pending rents
+export const getCustomerPendingRents = async () =>{
+    try{
+        const response = await api.get(`/customer/pending-rent`)
+        return response.data.data
+    } catch(err){
+        console.log(err)
+        const errMessage = err?.response?.data?.message || "Something went wrong."
+        throw new Error(errMessage)
+    }
+}

@@ -149,6 +149,7 @@ function EmployeeForm({selectedEmployee, onClose}) {
                   <select 
                   {...register('branch')}
                   value={selectedBranch}
+                  onChange={(e)=>setSelectedBranch(e.target.value)}
                   className='p-2 border border-neutral-300 rounded-md outline-none'>
                      <option value={''}>--- Select Branch ---</option>
                      {
@@ -157,6 +158,7 @@ function EmployeeForm({selectedEmployee, onClose}) {
                         ))
                      }
                   </select>
+                  {errors.branch && <span className='text-sm text-red-500'>{errors.branch.message}</span>}
                 </div>
               </div>
               <div className="flex justify-center items-center">

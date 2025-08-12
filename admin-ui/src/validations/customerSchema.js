@@ -16,6 +16,10 @@ export const customerSchema = z.object({
     .number({ invalid_type_error: "Deposit amount must be a number." })
     .min(0, { message: "Minimum value is 0." }),
 
+  rent_amount: z
+  .number({invalid_type_error: 'Rent amount must be a number.'})
+  .min(0, {message: 'Minimum value is 0.'}),
+
   room: z
     .string()
     .min(1, { message: "Please select any of one room." }),

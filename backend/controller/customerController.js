@@ -1,13 +1,15 @@
 import BRANCH from "../models/BRANCH.js";
 import CUSTOMER from "../models/CUSTOMER.js";
 import ROOM from "../models/ROOM.js";
+import TRANSACTION from "../models/TRANSACTION.js";
+import { getMonthYearList, getPendingMonths } from "../helper.js";
 
 export const createCustomer = async (req, res, next) =>{
     try{
         const {mongoid, userType} = req
-        const {customer_name, mobile_no, deposite_amount, room, branch, joining_date} = req.body 
+        const {customer_name, mobile_no, deposite_amount, rent_amount, room, branch, joining_date} = req.body 
       
-        if(!customer_name || !mobile_no || !deposite_amount || !room || !branch || !joining_date) return res.status(400).json({message:"Please provide all required fields.",success:false})
+        if(!customer_name || !mobile_no || !deposite_amount || !rent_amount || !room || !branch || !joining_date) return res.status(400).json({message:"Please provide all required fields.",success:false})
 
         const existCustomer = await CUSTOMER.findOne({mobile_no})
 
@@ -27,6 +29,7 @@ export const createCustomer = async (req, res, next) =>{
             customer_name,
             mobile_no,
             deposite_amount,
+            rent_amount,
             room,
             joining_date,
             branch,
@@ -184,3 +187,84 @@ export const changeStatus = async (req, res, next) =>{
     }
 }
 
+
+ 
+export const getPendingCustomerRentList = async (req, res, next) =>{
+    try{
+        const customers = await CUSTOMER.find({status:true})
+        .populate('branch')
+        .populate('room')
+
+        const result = []
+ 
+        for (const customer of customers){
+           const monthList = getMonthYearList(customer.joining_date)
+
+           const rentTransaction = await TRANSACTION.find({
+             transactionType:'income',
+             type:'customer_rent',
+             refModel:'Customerrent',
+             branch:customer.branch._id
+           }).populate({
+             path:'refId',
+             model:'Customerrent',
+             match: {customer:customer._id}
+           })
+
+           const paidRentMap = {}
+
+           for (const tx of rentTransaction) {
+               const entry = tx.refId;
+               if(!entry) continue;
+
+               const key = `${entry.month}-${entry.year}`;
+               if(!paidRentMap[key]){
+                paidRentMap[key] = 0
+               }
+
+               paidRentMap[key] += entry.amount;
+           }
+
+           const pendingRent = [];
+
+           for(const {month, year} of monthList){
+             const key = `${month}-${year}`
+             const paid = paidRentMap[key] || 0
+             const pending = Math.max(customer.rent_amount-paid, 0)
+
+             if(pending > 0){
+                const today = new Date();
+                const currentMonth = today.getMonth() + 1;
+                const currentYear = today.getFullYear()
+
+                const isRequired = !(month === currentMonth && year === currentYear)
+
+                pendingRent.push({
+                    month,
+                    year,
+                    pending,
+                    required: isRequired
+                })
+             }
+          }
+
+          if(pendingRent.length > 0) {
+             result.push({
+                customerId:customer._id,
+                customer_name:customer.customer_name,
+                branch:customer.branch,
+                room:customer.room,
+                mobile_no:customer.mobile_no,
+                rent_amount:customer.rent_amount,
+                pending_rent:pendingRent
+             })
+          }
+
+        } 
+
+        return res.status(200).json({message:"Pending customer list fetched successfully.",success:true,data:result})
+
+    }catch(err){
+        next(err)
+    }
+}

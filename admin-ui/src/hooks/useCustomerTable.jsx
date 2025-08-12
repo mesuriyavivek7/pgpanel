@@ -100,6 +100,19 @@ export const useCustomerTable = (handleOpenForm, room) =>{
             ),
           },
           {
+            headerName: 'Rent Amount',
+            field: 'rent_amount',
+            minWidth: 200,
+            flex: 1,
+            cellRenderer: (params) => (
+              <div className="flex items-center w-full h-full">
+                <div className="flex items-center gap-2">
+                 <span>₹{params.value}</span>
+                </div>
+              </div>
+            ),
+          },
+          {
             headerName: 'Room No',
             field: 'room.room_id',
             minWidth: 160,

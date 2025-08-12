@@ -1,4 +1,6 @@
 import EMPLOYEE from "../models/EMPLOYEE.js";
+import { getMonthYearList } from "../helper.js";
+import TRANSACTION from "../models/TRANSACTION.js";
 
 
 export const createEmployee = async (req, res, next) =>{
@@ -105,6 +107,83 @@ export const changeEmployeeStatus = async (req, res, next) =>{
         await employee.save()
 
         return res.status(200).json({message:"Employee status changed successfully.",success:true})
+
+    }catch(err){
+        next(err)
+    }
+}
+
+export const getEmployeePendingSalaries = async (req, res, next) =>{
+    try{
+        const employees = await EMPLOYEE.find({status:true}).populate('branch')
+
+        const result = []
+
+        for(const employee of employees){
+            const monthList = getMonthYearList(employee.createdAt)
+
+            const salaryTransaction = await TRANSACTION.find({
+                transactionType:'expense',
+                type:'employee_salary',
+                refModel:'Employeesalary',
+                branch:employee.branch._id
+            }).populate({
+                path:'refId',
+                model:'Employeesalary',
+                match:{employee: employee._id}
+            })
+
+            const paidSalaryMap = {}
+
+            for (const tx of salaryTransaction){
+                const entry = tx.refId;
+                if(!entry) continue;
+
+                const key = `${entry.month}-${entry.year}`;
+                if(!paidSalaryMap[key]){
+                    paidSalaryMap[key] = 0
+                }
+
+                paidSalaryMap[key] += entry.amount;
+            }
+
+            const pendingSalary = [];
+
+            for(const {month, year} of monthList){
+                const key = `${month}-${year}`
+                const paid = paidSalaryMap[key] || 0
+                const pending = Math.max(employee.salary - paid, 0)
+
+                if(pending > 0){
+                    const today = new Date();
+                    const currentMonth = today.getMonth() + 1;
+                    const currentYear = today.getFullYear()
+
+                    const isRequired = !(month === currentMonth && year === currentYear)
+
+                    pendingSalary.push({
+                        month,
+                        year,
+                        pending,
+                        required: isRequired
+                    })
+                }
+            }
+
+            if(pendingSalary.length > 0){
+                result.push({
+                    employeeId:employee._id,
+                    employee_name:employee.employee_name,
+                    employee_type:employee.employee_type,
+                    mobile_no:employee.mobile_no,
+                    salary:employee.salary,
+                    branch:employee.branch.branch_name,
+                    pending_salary:pendingSalary
+                })
+            }
+        }
+        
+        return res.status(200).json({message:"All salary details retrived successfully.",success:true, data:result})
 
     }catch(err){
         next(err)

@@ -13,6 +13,11 @@ import roomRoute from './routes/room.js'
 import customerRoute from './routes/customer.js'
 import employeeRoute from './routes/employee.js'
 import acmanagerRoute from './routes/account.js'
+import transactionRoute from './routes/transaction.js'
+import inventoryRoute from './routes/inventory.js'
+import monthlyRoute from './routes/monthly.js'
+import bankaccountRoute from './routes/bankaccount.js'
+import cashoutRoute from './routes/cashout.js'
 
 // Get the current file's path
 const __filename = fileURLToPath(import.meta.url);
@@ -94,6 +99,11 @@ app.use('/api/room',roomRoute)
 app.use('/api/customer',customerRoute)
 app.use('/api/employee',employeeRoute)
 app.use('/api/acmanager',acmanagerRoute)
+app.use('/api/transaction', transactionRoute)
+app.use('/api/inventory',inventoryRoute)
+app.use('/api/monthlybill', monthlyRoute)
+app.use('/api/bankaccount', bankaccountRoute)
+app.use('/api/cashout', cashoutRoute)
 
  // Middleware to catch errors
  app.use((err, req, res, next) => {

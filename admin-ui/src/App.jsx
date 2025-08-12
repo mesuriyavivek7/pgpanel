@@ -15,6 +15,10 @@ import Customer from './pages/admin/Customer';
 import Employee from './pages/admin/Employee';
 import Accountmanager from './pages/admin/Accountmanager';
 import RoomPreview from './pages/admin/RoomPreview';
+import CustomerRent from './pages/admin/CustomerRent';
+import EmployeeSalary from './pages/admin/EmployeeSalary';
+import Inventory from './pages/admin/Inventory';
+import MonthlyBill from './pages/admin/MonthlyBill';
 
 //Import Account components
 import AccountLayout from './layouts/AccountLayout';
@@ -47,6 +51,10 @@ function App() {
           <Route path='employees' element={<Employee></Employee>}></Route>
           <Route path='accountmanagers' element={<Accountmanager></Accountmanager>}></Route>
           <Route path='branches/room/preview' element={<RoomPreview></RoomPreview>}></Route>
+          <Route path='rents' element={<CustomerRent></CustomerRent>}></Route>
+          <Route path='salary' element={<EmployeeSalary></EmployeeSalary>}></Route>
+          <Route path='inventory' element={<Inventory></Inventory>}></Route>
+          <Route path='monthlybill' element={<MonthlyBill></MonthlyBill>}></Route>
         </Route>
    
        {/* Account Routes */}

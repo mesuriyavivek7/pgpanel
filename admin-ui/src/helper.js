@@ -26,3 +26,10 @@ export const sliceString = (str,n) =>{
         return str
     }
 }
+
+export const getShortMonthName = (monthNumber) =>{
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    if (monthNumber < 1 || monthNumber > 12) return null;
+    return monthNames[monthNumber - 1];
+}

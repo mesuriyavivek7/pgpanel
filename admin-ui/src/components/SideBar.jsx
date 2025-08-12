@@ -8,7 +8,10 @@ import { Building2 } from 'lucide-react';
 import { Users } from 'lucide-react';
 import { IdCardLanyard } from 'lucide-react';
 import { ShieldUser } from 'lucide-react';
-
+import { Coins } from 'lucide-react';
+import { Wallet } from 'lucide-react';
+import { Box } from 'lucide-react';
+import { BookText } from 'lucide-react';
 
 
 const adminRoutes = [
@@ -36,6 +39,26 @@ const adminRoutes = [
       label:'Account Managers',
       icon:ShieldUser,
       link:'/admin/accountmanagers'
+    },
+    {
+      label:'Rents',
+      icon:Coins,
+      link:'/admin/rents'
+    },
+    {
+      label:'Salary',
+      icon:Wallet,
+      link:'/admin/salary'
+    },
+    {
+      label:'Inventory',
+      icon:Box,
+      link:'/admin/inventory'
+    },
+    {
+      label:'Monthly Bills',
+      icon:BookText,
+      link:'/admin/monthlybill'
     }
 ]
 
@@ -46,6 +69,7 @@ function SideBar({showSideBar}) {
      if((location.pathname==='/admin' || location.pathname==='/account') && label==='Dashboard') return true
      if(location.pathname.includes(label.toLowerCase())) return true
      if(location.pathname.includes("accountmanagers") && label === "Account Managers") return true
+     if(location.pathname.includes('monthlybill') && label === "Monthly Bills") return true
 
      return false
 

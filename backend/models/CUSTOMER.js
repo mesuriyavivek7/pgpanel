@@ -19,6 +19,11 @@ const customerSchema = new mongoose.Schema({
     required: true,
     min: [0, 'Deposit amount cannot be negative']
   },
+  rent_amount:{
+    type:Number,
+    required:true,
+    min: [0, 'Rent amount cannot be negative']
+  },
   room: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Room'

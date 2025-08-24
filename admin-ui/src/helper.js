@@ -20,6 +20,7 @@ export const errorNameConvertor = (val) =>{
 }
 
 export const sliceString = (str,n) =>{
+    if(!str) return '-'
     if(str.length > n){
         return str.slice(0,n)+'...'
     }else{
@@ -32,4 +33,15 @@ export const getShortMonthName = (monthNumber) =>{
     "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     if (monthNumber < 1 || monthNumber > 12) return null;
     return monthNames[monthNumber - 1];
+}
+
+export const convertIntoRupees = (amount) =>{
+    if(amount===null || amount === undefined) return ''
+
+    if(amount < 0){
+        let pos = Math.abs(amount)
+        return "-₹"+pos
+    }else{
+        return "₹"+amount
+    }
 }

@@ -74,9 +74,9 @@ export const changeCustomerStatus = async (customerId, status) =>{
 }
 
 //For get customer pending rents
-export const getCustomerPendingRents = async () =>{
+export const getCustomerPendingRents = async (searchQuery="", branch="") =>{
     try{
-        const response = await api.get(`/customer/pending-rent`)
+        const response = await api.get(`/customer/pending-rent?searchQuery=${searchQuery}&branch=${branch}`)
         return response.data.data
     } catch(err){
         console.log(err)

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { AgGridReact } from "ag-grid-react";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
@@ -26,6 +26,11 @@ function CustomerRent() {
 
   const { loading, rows, columns, refetch } =
     useCustomerRentTable(handleOpenForm);
+
+
+  useEffect(()=>{
+    refetch(searchQuery, selectedBranch) 
+  },[searchQuery, selectedBranch])  
 
   const handleCloseForm = (refresh) => {
     setSelectedCustomer(null);

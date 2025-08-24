@@ -7,43 +7,31 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css'; // Or any other theme
 
 import Breadcrumb from '../../components/Breadcrumb';
-import { useCashoutTable } from '../../hooks/useCashoutTable';
-import CashoutForm from '../../components/CashoutForm';
+import { useTransactionTable } from '../../hooks/useTransactionTable';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
-function CashOut() {
-  const [openForm, setOpenForm] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
+function Transaction() {
+  const [selectedBranch,setSelectedBranch] = useState("")
+  const [selectedTransactions,setSelectedTransactions] = useState("")
 
-  console.log(searchQuery)
+  const {rows, columns, loading, refetch} = useTransactionTable() 
 
-  const {rows , columns , loading , refetch } = useCashoutTable()
+  console.log(selectedBranch)
+  console.log(selectedTransactions)
 
   useEffect(()=>{
-     refetch(searchQuery)
-  },[searchQuery])
-
-  const handleOpenForm = () =>{
-    setOpenForm(true)
-  }
-
-  const handleCloseForm = (refresh = false) =>{
-   setOpenForm(false)
-   if(refresh) refetch()
-  }
-
-
+     refetch(selectedBranch, selectedTransactions)
+  },[selectedBranch,selectedTransactions])
   return (
-    <div className='flex w-full h-full flex-col gap-8'>
-      {openForm && <CashoutForm onClose={handleCloseForm}></CashoutForm>}
-      <Breadcrumb
-      searchQuery={searchQuery}
-      setSearchQuery={setSearchQuery}
-      onClick={handleOpenForm}
-      ></Breadcrumb>
-
-     <div className='h-full ag-theme-alpine w-full'>
+    <div className='w-full h-full flex flex-col gap-8'>
+        <Breadcrumb
+         selectedBranch={selectedBranch}
+         setSelectedBranch={setSelectedBranch}
+         selectedTransactions={selectedTransactions}
+         setSelectedTransactions={setSelectedTransactions}
+        ></Breadcrumb>
+        <div className='h-full ag-theme-alpine w-full'>
         <AgGridReact
           rowData={rows}
           rowHeight={70}
@@ -65,4 +53,4 @@ function CashOut() {
   )
 }
 
-export default CashOut
+export default Transaction

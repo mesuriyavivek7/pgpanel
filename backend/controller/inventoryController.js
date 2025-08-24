@@ -5,7 +5,6 @@ import TRANSACTION from "../models/TRANSACTION.js";
 export const getAllInventoryTransaction = async (req, res, next) =>{
     try{
         const {searchQuery, branch} = req.query
-
         const filter = {
             type: 'inventory_purchase'
         };
@@ -24,6 +23,8 @@ export const getAllInventoryTransaction = async (req, res, next) =>{
 
             filter.refId = {$in : inventoryIds}
         }
+
+        console.log(filter)
 
         const transactions = await TRANSACTION.find(filter)
         .populate({

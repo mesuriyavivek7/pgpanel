@@ -22,7 +22,7 @@ export const useCustomerRentTable = (handleOpenForm) =>{
     const handleGetAllCustomerRent = async (searchQuery="", branch="") =>{
         try{
            setLoading(true)
-           const data = await getCustomerPendingRents()
+           const data = await getCustomerPendingRents(searchQuery, branch)
            setRows(data)
         }catch(err){
             console.log(err)

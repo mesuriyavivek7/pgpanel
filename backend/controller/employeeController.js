@@ -115,7 +115,20 @@ export const changeEmployeeStatus = async (req, res, next) =>{
 
 export const getEmployeePendingSalaries = async (req, res, next) =>{
     try{
-        const employees = await EMPLOYEE.find({status:true}).populate('branch')
+        const {searchQuery, branch} = req.query 
+        console.log('searchQuery--->',searchQuery)
+        console.log('branch---->',branch)
+        let filter = {status:true}
+     
+        if(searchQuery) {
+            filter.employee_name = { $regex: searchQuery, $options: 'i' };
+        }
+
+        if(branch){
+            filter.branch = branch
+        }
+
+        const employees = await EMPLOYEE.find(filter).populate('branch')
 
         const result = []
 

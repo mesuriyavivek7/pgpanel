@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 import { AgGridReact } from "ag-grid-react";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
@@ -15,7 +15,7 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 function Inventory() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedBranch,setSelectedBranch] = useState(null)
+  const [selectedBranch,setSelectedBranch] = useState('')
   const [openForm,setOpenForm] = useState(false)
 
   const {rows, columns, loading, refetch} = useInventoryTable()
@@ -23,6 +23,10 @@ function Inventory() {
   const handleOpenForm = () =>{
     setOpenForm(true)
   }
+
+  useEffect(()=>{
+    refetch(searchQuery, selectedBranch)
+  },[searchQuery, selectedBranch])
 
   const handleCloseForm = (refresh = false) =>{
     setOpenForm(false)
@@ -34,7 +38,7 @@ function Inventory() {
       {openForm && <InventoryForm onClose={handleCloseForm}></InventoryForm>}
       <Breadcrumb
       searchQuery={searchQuery}
-      setSearchQuery={searchQuery}
+      setSearchQuery={setSearchQuery}
       selectedBranch={selectedBranch}
       setSelectedBranch={setSelectedBranch}
       onClick={handleOpenForm}

@@ -19,7 +19,7 @@ export const useEmployeeSalaryTable = (handleOpenForm) => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const handleGetEmployeeSalary = async (searchQuery, branch) => {
+  const handleGetEmployeeSalary = async (searchQuery="", branch="") => {
     try {
       setLoading(true);
       const data = await getEmployeeSalary(searchQuery, branch);

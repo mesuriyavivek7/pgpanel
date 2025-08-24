@@ -28,7 +28,7 @@ export const useInventoryTable = () => {
     const [rows,setRows] = useState([])
     const [loading,setLoading] = useState(false)
 
-    const handleGetAllInventoryTransaction = async (searchQuery, branch) => {
+    const handleGetAllInventoryTransaction = async (searchQuery="", branch="") => {
         try{
            setLoading(true)
            const data = await getAllInventoryTransaction(searchQuery, branch)

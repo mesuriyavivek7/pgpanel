@@ -210,3 +210,34 @@ export const createTransactionForCashout = async (req, res, next) =>{
       next(err)
    }
 }
+
+
+export const getAllTransactions = async (req, res, next) =>{
+   try{
+      const {branch, bank_account ,transactionType} = req.query
+        
+      let filter = {}
+
+      if(branch){
+         filter.branch = branch
+      }
+
+      if(bank_account) {
+         filter.bank_account = bank_account
+      }
+
+      if(transactionType) {
+         filter.type = transactionType
+      }
+
+      const transactions = await TRANSACTION.find(filter).
+      populate("refId").
+      populate('branch').
+      populate('bank_account')
+
+      return res.status(200).json({message:"All transaction retrived successfully.",success:true,data:transactions})
+
+   }catch(err){
+      next(err)
+   }
+}

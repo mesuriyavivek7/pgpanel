@@ -1,6 +1,6 @@
 import express from 'express'
 import { verifyToken, verifyAdmin } from '../middleware/verifyUser.js'
-import { createTransactionForCashout, createTransactionForCustomerRent, createTransactionForEmployeeSalary, createTransactionForInventory, createTransactionForMonthlyPayment } from '../controller/transactionController.js'
+import { createTransactionForCashout, createTransactionForCustomerRent, createTransactionForEmployeeSalary, createTransactionForInventory, createTransactionForMonthlyPayment, getAllTransactions } from '../controller/transactionController.js'
 
 const app = express.Router()
 
@@ -18,5 +18,8 @@ app.post('/monthly-payment', verifyToken, createTransactionForMonthlyPayment)
 
 //For create transaction for cashout pay
 app.post('/cashout-pay', verifyToken, createTransactionForCashout)
+
+//For get all transactions
+app.get('/', verifyToken, verifyAdmin, getAllTransactions)
 
 export default app

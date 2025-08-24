@@ -9,7 +9,7 @@ export const createRoom = async (req, res, next) =>{
 
         if(!room_id || !capacity || !branch) return res.status(400).json({message:"Please provide all required fields.",success:false})
 
-        const existRoom = await ROOM.findOne({room_id})
+        const existRoom = await ROOM.findOne({room_id,branch})
 
         if(existRoom) return res.status(409).json({message:"Room is already exist with given room no.",success:false})
 

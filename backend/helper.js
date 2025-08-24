@@ -42,3 +42,11 @@ export const getMonthYearList = (startDate) =>{
 
    return results
 }
+
+export const getMonthShortNames = (monthNumber) =>{
+    const monthNames = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    ];
+    return monthNames[monthNumber - 1];
+}

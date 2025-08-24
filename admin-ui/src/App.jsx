@@ -19,10 +19,13 @@ import CustomerRent from './pages/admin/CustomerRent';
 import EmployeeSalary from './pages/admin/EmployeeSalary';
 import Inventory from './pages/admin/Inventory';
 import MonthlyBill from './pages/admin/MonthlyBill';
+import CashOut from './pages/admin/CashOut';
+import Transaction from './pages/admin/Transaction';
 
 //Import Account components
 import AccountLayout from './layouts/AccountLayout';
 import AccountDashboard from './pages/account/AccountDashboard';
+
 
 
 function App() {
@@ -55,6 +58,8 @@ function App() {
           <Route path='salary' element={<EmployeeSalary></EmployeeSalary>}></Route>
           <Route path='inventory' element={<Inventory></Inventory>}></Route>
           <Route path='monthlybill' element={<MonthlyBill></MonthlyBill>}></Route>
+          <Route path='cashout' element={<CashOut></CashOut>}></Route>
+          <Route path='transactions' element={<Transaction></Transaction>}></Route>
         </Route>
    
        {/* Account Routes */}

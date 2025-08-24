@@ -17,7 +17,7 @@ const transactionSchema = new mongoose.Schema({
     refId:{
         type:mongoose.Schema.Types.ObjectId,
         required:true,
-        refPath:'refModal'
+        refPath:'refModel'
     },
     payment_mode:{
         type:String,

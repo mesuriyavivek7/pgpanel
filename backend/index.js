@@ -18,6 +18,7 @@ import inventoryRoute from './routes/inventory.js'
 import monthlyRoute from './routes/monthly.js'
 import bankaccountRoute from './routes/bankaccount.js'
 import cashoutRoute from './routes/cashout.js'
+import adminRoute from './routes/admin.js'
 
 // Get the current file's path
 const __filename = fileURLToPath(import.meta.url);
@@ -104,6 +105,7 @@ app.use('/api/inventory',inventoryRoute)
 app.use('/api/monthlybill', monthlyRoute)
 app.use('/api/bankaccount', bankaccountRoute)
 app.use('/api/cashout', cashoutRoute)
+app.use('/api/admin', adminRoute)
 
  // Middleware to catch errors
  app.use((err, req, res, next) => {

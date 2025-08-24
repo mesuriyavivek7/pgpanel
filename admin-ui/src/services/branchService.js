@@ -55,3 +55,14 @@ export const getBranchById = async (branchId) =>{
        throw new Error(errMessage)
   }
 }
+
+export const getDashboardSummery = async (branchId) =>{
+  try{
+    const response = await api.get(`/branch/dashboard-summery/${branchId}`)
+    return response.data.data
+  }catch(err){
+    console.log(err)
+    const errMessage = err?.response?.data?.message || "Something went wrong."
+    throw new Error(errMessage)
+  }
+}

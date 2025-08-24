@@ -5,6 +5,8 @@ import CASHOUT from "../models/CASHOUT.js";
 export const getAllCashOutTransaction = async (req, res, next) =>{
     try{
         const {searchQuery} = req.query
+
+        console.log(searchQuery)
         
         const filter = {
             type:'cash_given'
@@ -25,7 +27,9 @@ export const getAllCashOutTransaction = async (req, res, next) =>{
         .populate({
             path:'refId',
             model:'Cashout'
-        }).sort({createdAt: -1})
+        })
+        .populate('bank_account')
+        .sort({createdAt: -1})
 
         return res.status(200).json({message:"All cashout transaction retrived.", success:true, data:transactions})
 

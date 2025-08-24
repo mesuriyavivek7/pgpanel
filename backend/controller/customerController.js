@@ -191,7 +191,20 @@ export const changeStatus = async (req, res, next) =>{
  
 export const getPendingCustomerRentList = async (req, res, next) =>{
     try{
-        const customers = await CUSTOMER.find({status:true})
+        const {searchQuery, branch} = req.query
+        let filter = {
+            status:true
+        }
+
+        if(searchQuery){
+            filter.customer_name = { $regex: searchQuery, $options: 'i' };
+        }
+
+        if(branch){
+            filter.branch = branch
+        }
+
+        const customers = await CUSTOMER.find(filter)
         .populate('branch')
         .populate('room')
 

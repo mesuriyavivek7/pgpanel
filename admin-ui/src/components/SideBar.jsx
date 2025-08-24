@@ -12,6 +12,8 @@ import { Coins } from 'lucide-react';
 import { Wallet } from 'lucide-react';
 import { Box } from 'lucide-react';
 import { BookText } from 'lucide-react';
+import { HandCoins } from 'lucide-react';
+import { ArrowLeftRight } from 'lucide-react';
 
 
 const adminRoutes = [
@@ -59,6 +61,16 @@ const adminRoutes = [
       label:'Monthly Bills',
       icon:BookText,
       link:'/admin/monthlybill'
+    },
+    {
+      label:'Cashout',
+      icon:HandCoins,
+      link:'/admin/cashout'
+    },
+    {
+      label:'Transactions',
+      icon:ArrowLeftRight,
+      link:'/admin/transactions'
     }
 ]
 

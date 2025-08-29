@@ -48,7 +48,7 @@ export const changeEmployeeStatus = async (employeeId, status) =>{
 }
 
 //For get all employee salary 
-export const getEmployeeSalary = async (searchQuery, branch) =>{
+export const getEmployeeSalary = async (searchQuery="", branch="") =>{
     try{
         const response = await api.get(`/employee/salary-details?searchQuery=${searchQuery}&branch=${branch}`)
         return response.data.data

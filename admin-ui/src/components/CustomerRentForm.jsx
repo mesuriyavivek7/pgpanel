@@ -172,8 +172,6 @@ function CustomerRentForm({selectedCustomer, onClose}) {
                     >
                       <option value={''}>-- Select Payment Mode --</option>
                       <option value={'cash'}>Cash</option>
-                      <option value={'online'}>Online</option>
-                      <option value={'cheque'}>Cheque</option>
                       <option value={'upi'}>UPI</option>
                       <option value={'bank_transfer'}>Bank Transfer</option>
                     </select>

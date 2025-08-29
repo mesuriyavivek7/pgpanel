@@ -207,7 +207,6 @@ function CustomerForm({selectedCustomer, onClose}) {
                 type='date'
                 {...register("joining_date", {valueAsDate: true})}
                 className="p-2 border border-neutral-300 rounded-md outline-none"
-                placeholder="Enter deposite amount"
                 ></input>
                 {errors.joining_date && <span className='text-sm text-red-500'>{errors.joining_date.message}</span>}
                 </div>

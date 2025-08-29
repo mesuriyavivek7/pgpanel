@@ -74,7 +74,6 @@ function AccountForm({selectedAccount, onClose}) {
 
 
    const handleEditAcmanager = async (acmanagerData) =>{
-    console.log('updated scmanager')
      setLoading(true)
      try{
         const data = await updateAcmanager(acmanagerData, selectedAccount._id)

@@ -12,6 +12,15 @@ const monthlyPaySchema = new mongoose.Schema({
     branch:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Branch'
+    },
+    amount:{
+        type:Number,
+        required:true,
+        min:[0, 'Monthly bill amount cant be negative.']
+    },
+    starting_date:{
+        type: Date,
+        default: () => new Date()
     }
 },{timestamps:true})
 

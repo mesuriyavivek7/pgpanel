@@ -40,7 +40,7 @@ export const createTransactionForInventoryPurchase = async (transactionData) =>{
 //Create transaction for pay monthly bill
 export const createTransactionForMonthlyPay = async (transactionData) => {
    try{
-      const response = await api.post('/transaction/inventory-purchase', transactionData)
+      const response = await api.post('/transaction/monthly-payment', transactionData)
       return response.data.data
    }catch(err){
       console.log(err)

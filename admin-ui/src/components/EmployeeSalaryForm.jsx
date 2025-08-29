@@ -39,6 +39,7 @@ function EmployeeSalaryForm({ employee , onClose }) {
       amount: 0,
       date: "",
       payment_mode: "",
+      bank_account:''
     },
   });
 
@@ -50,7 +51,8 @@ function EmployeeSalaryForm({ employee , onClose }) {
        reset({
         amount:0,
         date:`${employee.pending_salary[0].month}-${employee.pending_salary[0].year}`,
-        payment_mode:''
+        payment_mode:'',
+        bank_account:''
        })
     }
   },[])
@@ -242,7 +244,7 @@ function EmployeeSalaryForm({ employee , onClose }) {
                 <div className="flex flex-col">
                   <input
                     {...register("amount", { valueAsNumber: true })}
-                    type="text"
+                    type="number"
                     placeholder="Enter amount"
                     className="p-2 border border-neutral-300 rounded-md outline-none"
                   ></input>
@@ -301,8 +303,6 @@ function EmployeeSalaryForm({ employee , onClose }) {
                   >
                     <option value={""}>-- Select Payment Mode --</option>
                     <option value={"cash"}>Cash</option>
-                    <option value={"online"}>Online</option>
-                    <option value={"cheque"}>Cheque</option>
                     <option value={"upi"}>UPI</option>
                     <option value={"bank_transfer"}>Bank Transfer</option>
                   </select>

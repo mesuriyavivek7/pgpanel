@@ -116,8 +116,6 @@ export const changeEmployeeStatus = async (req, res, next) =>{
 export const getEmployeePendingSalaries = async (req, res, next) =>{
     try{
         const {searchQuery, branch} = req.query 
-        console.log('searchQuery--->',searchQuery)
-        console.log('branch---->',branch)
         let filter = {status:true}
      
         if(searchQuery) {

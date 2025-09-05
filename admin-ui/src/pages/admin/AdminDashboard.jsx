@@ -48,8 +48,6 @@ function AdminDashboard() {
     handleGetDashboardSummery()
   },[])
 
-  console.log('Dashboard data ----->',dashboardData)
-
   return (
     <div className="flex flex-col gap-8">
       <Breadcrumb></Breadcrumb>

@@ -113,3 +113,59 @@ export const getDashboardSummery = async (req, res, next) =>{
         next(err)
     }
 }
+
+
+export const getDashboardSearch = async (req, res, next) =>{
+    try{
+        const {searchQuery} = req.query
+
+        const {role} = req.params
+        let results = []
+
+        if(!searchQuery) return res.status(200).json({message:"Provide searchquery to get data.",data:[],success:true})
+
+        switch(role){
+            case 'Customers': {
+              results = await CUSTOMER.find({
+                $or: [
+                  { customer_name: { $regex: searchQuery, $options: 'i' } },
+                  { mobile_no: { $regex: searchQuery, $options: 'i' } }
+                ],
+                status:true
+              }).populate('room').populate('branch')
+            }
+            break;
+
+            case 'Employees': {
+               results = await EMPLOYEE.find({
+                $or: [
+                  { employee_name: { $regex: searchQuery, $options: 'i' } },
+                  { mobile_no: { $regex: searchQuery, $options: 'i' } }
+                ],
+                status:true
+               }).populate('branch')
+            }   
+            break;      
+
+            case 'Ac Managers': {
+               results = await ACCOUNT.find({
+                $or: [
+                  { full_name: { $regex: searchQuery, $options: 'i' } },
+                  { contact_no: { $regex: searchQuery, $options: 'i' } },
+                  { email: { $regex: searchQuery, $options: 'i' } }
+                ],
+            }).populate('branch')
+            }   
+            break;
+
+            default: {
+                return res.status(400).json({data:null,message:"Invalid role.",success:false})
+            }
+        }
+
+        return res.status(200).json({message:"All search query results retrived successfully.",data:results,success:true})
+
+    }catch(err){
+        next(err)
+    }
+}

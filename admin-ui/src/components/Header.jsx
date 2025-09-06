@@ -1,15 +1,45 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 //import icon
 import { Search } from 'lucide-react';
 import { Bell } from 'lucide-react';
 import { Menu } from 'lucide-react';
+import { LogOut } from 'lucide-react';
+import { User } from 'lucide-react';
+import Tooltip from '@mui/material/Tooltip';
+
 import SearchBar from './SearchBar';
 
-function Header({setShowSideBar}) {
+import { logout } from '../services/authService';
+import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
 
+
+function Header({setShowSideBar}) {
+  const {setAuth} = useAuth()
   const [openSearchBar,setOpenSearchBar] = useState(false)
+  const navigate = useNavigate()
+
+  const handleLogout = async () =>{
+    try{
+      const data = await logout()
+      setAuth({
+        loading:false,
+        token:null,
+        user:null
+      })
+      navigate('/login')
+    }catch(err){
+      console.log(err)
+      toast.error(err?.message)
+    }
+  }
+
+  const handleNavigateProfile = () =>{
+     navigate('profile')
+  }
 
   return (
     <>
@@ -22,8 +52,16 @@ function Header({setShowSideBar}) {
            <input onFocus={()=>setOpenSearchBar(true)} type='text' className='outline-none h-8 text-sm' placeholder='Search for anything...'></input>
          </div>
        </div>
-       <div className='flex items-center gap-2'>
-         <Bell size={18} className='text-gray-500'></Bell>
+       <div className='flex items-center gap-4'>
+         <Tooltip onClick={handleNavigateProfile} title="profile">
+          <User size={20} className='text-gray-500 cursor-pointer'></User>
+         </Tooltip>
+         <Tooltip title="notifications">
+         <Bell size={20} className='text-gray-500 cursor-pointer'></Bell>
+         </Tooltip>
+         <Tooltip title="logout">
+         <LogOut onClick={handleLogout} className='cursor-pointer text-red-500' size={20}></LogOut>
+         </Tooltip>
        </div>
     </div>
     </>

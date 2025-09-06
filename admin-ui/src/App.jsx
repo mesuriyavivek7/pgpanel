@@ -21,6 +21,7 @@ import Inventory from './pages/admin/Inventory';
 import MonthlyBill from './pages/admin/MonthlyBill';
 import CashOut from './pages/admin/CashOut';
 import Transaction from './pages/admin/Transaction';
+import Profile from './pages/admin/Profile';
 
 //Import Account components
 import AccountLayout from './layouts/AccountLayout';
@@ -60,6 +61,7 @@ function App() {
           <Route path='monthlybill' element={<MonthlyBill></MonthlyBill>}></Route>
           <Route path='cashout' element={<CashOut></CashOut>}></Route>
           <Route path='transactions' element={<Transaction></Transaction>}></Route>
+          <Route path='profile' element={<Profile></Profile>}></Route>
         </Route>
    
        {/* Account Routes */}

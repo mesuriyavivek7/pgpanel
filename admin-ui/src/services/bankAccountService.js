@@ -23,3 +23,15 @@ export const getAllBankAccount = async () =>{
       throw new Error(errMessage)
     }
 }
+
+//For update bank account 
+export const updateBankAccount = async (accountId,data) =>{
+  try{
+    const response = await api.put(`/bankaccount/${accountId}`, data)
+    return response.data.data
+  }catch(err){
+    console.log(err)
+    const errMessage = err?.response?.data?.message || "Something went wrong."
+    throw new Error(errMessage)
+  }
+}

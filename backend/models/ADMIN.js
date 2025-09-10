@@ -14,6 +14,9 @@ const adminSchema = new mongoose.Schema({
           'Please fill a valid email address'
         ]
     },
+    pglogo:{
+        type:String,
+    }
 },{timestamps:true})
 
 export default mongoose.model('Admin',adminSchema)

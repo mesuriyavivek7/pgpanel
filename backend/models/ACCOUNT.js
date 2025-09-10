@@ -23,7 +23,7 @@ const accountSchema = new mongoose.Schema({
         ]
     },
     branch: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: [mongoose.Schema.Types.ObjectId],
       ref: 'Branch'
     },
     added_by:{

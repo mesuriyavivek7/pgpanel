@@ -5,6 +5,9 @@ import CUSTOMER from "../models/CUSTOMER.js"
 import EMPLOYEE from "../models/EMPLOYEE.js"
 import ACCOUNT from "../models/ACCOUNT.js"
 import { getMonthShortNames } from "../helper.js"
+import { removeFile } from "../utils/removeFile.js"
+import ADMIN from "../models/ADMIN.js"
+import LOGINMAPPING from "../models/LOGINMAPPING.js"
 
 export const getDashboardSummery = async (req, res, next) =>{
     try{
@@ -164,6 +167,80 @@ export const getDashboardSearch = async (req, res, next) =>{
         }
 
         return res.status(200).json({message:"All search query results retrived successfully.",data:results,success:true})
+
+    }catch(err){
+        next(err)
+    }
+}
+
+export const getAdminDetails = async (req, res, next) =>{
+    try{
+       const {mongoid} = req 
+
+       const admin = await ADMIN.findById(mongoid)
+
+       return res.status(200).json({message:"Admin details retrival successfully.",data:admin,success:true})
+
+    }catch(err){
+        next(err)
+    }
+}
+
+export const uploadLogo = async (req, res, next) => {
+    try{
+        const {mongoid} = req 
+        
+        const admin = await ADMIN.findById(mongoid) 
+
+        if(!admin){
+           await removeFile(path.join('uploads',"branch", req.file.filename))
+           return res.status(404).json({message:"Admin not found.",success:false})
+        } 
+
+        if(admin.pglogo){
+           const filePath = admin.pglogo.replace(process.env.DOMAIN, "")
+           await removeFile(filePath)
+        }
+
+        let imageUrl = null 
+        
+        imageUrl = `${process.env.DOMAIN}/uploads/logo/${req.file.filename}`
+
+        admin.pglogo = imageUrl 
+
+        await admin.save()
+
+        return res.status(200).json({message:"Logo uploaded successfully.",success:true})
+        
+    }catch(err){
+        next(err)
+    }
+}
+
+export const updateAdminDetails = async (req, res, next) =>{
+    try{
+        const {mongoid} = req  
+
+        const admin = await ADMIN.findById(mongoid) 
+
+        if(!admin) return res.status(404).json({message:"Admin not found.",success:false})
+
+        const {full_name, email} = req.body 
+    
+        if(email && admin.email !== email) {
+          const existUser = await LOGINMAPPING.findOne({email})
+
+          if(existUser) return res.status(409).json({message:"User is already exist with same email address.",success:false})
+        }
+
+        await LOGINMAPPING.findOneAndUpdate({mongoid}, {$set:{email:email}})
+
+        admin.full_name = full_name 
+        admin.email = email 
+
+        await admin.save() 
+
+        return res.status(200).json({message:"Admin details updated successfully.",success:true})
 
     }catch(err){
         next(err)

@@ -8,7 +8,7 @@ export const createAccountManager = async (req, res, next) =>{
 
         const {full_name, contact_no, email, branch, password} = req.body 
         
-        if(!full_name || !contact_no || !email || !branch || !password) return res.status(200).json({message:"Please provide all required fields.",success:false})
+        if(!full_name || !contact_no || !email || !branch || (branch && branch.length === 0) || !password) return res.status(200).json({message:"Please provide all required fields.",success:false})
 
         const existAcContactNo = await ACCOUNT.findOne({contact_no})
 

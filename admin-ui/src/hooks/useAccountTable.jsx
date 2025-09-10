@@ -30,6 +30,7 @@ export const useAccountTable = (handleOpenForm) => {
         setLoading(true)
         try{
           const data = await getAllAcmanager(searchQuery, branch)
+          console.log(data)
           setRows(data)
         }catch(err){
           console.log(err)
@@ -98,18 +99,25 @@ export const useAccountTable = (handleOpenForm) => {
        },
        {
         headerName: 'Branch',
-        field: 'branch.branch_name',
+        field: 'branch',
         minWidth: 260,
         flex: 1,
         valueGetter: (params) => params.data.branch?.branch_name,
         cellRenderer: (params) => (
          <div className="flex items-center w-full h-full">
-            <Tooltip title={params.value}>
-             <div className="flex items-center gap-2">
-               <img src={BRANCH} alt="branch" className="w-7 h-7 rounded-full" />
-               <span>{sliceString(params.value,20)}</span>
-             </div>
-            </Tooltip>
+            <div className="flex items-center gap-2">
+               <Tooltip title={params.data.branch[0].branch_name}>
+                <div className="flex items-center gap-2">
+                  <img src={BRANCH} alt="branch" className="w-7 h-7 rounded-full" />
+                  <span>{sliceString(params.data.branch[0].branch_name,20)}</span>
+                </div>
+               </Tooltip>
+               <Tooltip title={params.data.branch.map(b => b.branch_name).join(', ')}>
+               <span className="rounded-full text-gray-600 text-sm w-7 flex justify-center items-center h-7 bg-gray-200">
+                 +{params.data.branch.length-1}
+               </span>
+               </Tooltip>
+            </div>
          </div>
         ),
        },

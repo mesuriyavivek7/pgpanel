@@ -7,7 +7,7 @@ export const accountSchema = z.object({
 
   email: z.string().email({ message: "Invalid email format." }).min(1, { message: "Email address is required." }),
 
-  branch: z.string().min(1, { message: "Please select branch." }),
+  branch: z.array(z.string()).min(1, "At least one branch is required."),
 
   password: z.string().min(1, { message: "Password is required." }),
 });

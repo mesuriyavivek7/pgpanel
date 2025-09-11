@@ -5,6 +5,8 @@ import { removeFile } from "../utils/removeFile.js";
 import ROOM from "../models/ROOM.js";
 import CUSTOMER from "../models/CUSTOMER.js";
 import EMPLOYEE from "../models/EMPLOYEE.js";
+import ACCOUNT from "../models/ACCOUNT.js";
+import LOGINMAPPING from "../models/LOGINMAPPING.js";
 
 dotenv.config();
 
@@ -186,3 +188,37 @@ export const getDashboardSummery = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getAllBranchByManger = async (req, res, next) => {
+  try {
+    const { mongoid } = req
+    const { searchQuery } = req.query;
+
+    const loginUser = await LOGINMAPPING.findOne({mongoid, status: true})
+
+    if(!loginUser){
+      return res.status(403).json({message: "You are not authorized to access this data.", success: false})
+    }
+
+    let branches = []
+    const account = await ACCOUNT.findOne({ _id: mongoid })
+
+    if (!account) {
+      return res.status(404).json({ message: "Account manager not found.", success: false })
+    }
+
+    const branchIds = account.branch 
+
+    let filter = { _id: { $in: branchIds } }
+    if (searchQuery) {
+      filter.branch_name = { $regex: searchQuery, $options: "i" }
+    }
+
+    branches = await BRANCH.find(filter).sort({ createdAt: -1 })
+
+    return res.status(200).json({ message: "All brach by manager retrived successfully.", success: true, data: branches })
+
+  } catch (error) {
+    next(error)
+  }
+}

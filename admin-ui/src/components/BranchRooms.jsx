@@ -69,7 +69,7 @@ function BranchRooms({branchId}) {
           <div className='grid grid-cols-4 items-stretch gap-4'>
              {
                rooms.map((room, index)=> (
-                 <RoomCard openForm={handleOpenForm} key={index} room={room}></RoomCard>
+                 <RoomCard type={"Admin"} openForm={handleOpenForm} key={index} room={room}></RoomCard>
                ))
              }
           </div>

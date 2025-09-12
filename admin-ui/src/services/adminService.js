@@ -49,3 +49,15 @@ export const uploadAdminLogo = async (file) =>{
       throw new Error(errMessage)
    }
 }
+
+//For change password 
+export const changePassword = async (data) =>{
+   try{
+      const response = await api.put('/admin/change-password', data)
+      return response.data.data
+   }catch(err){
+      console.log(err)
+      const errMessage = err?.response?.data?.message
+      throw new Error(errMessage)
+   }
+}

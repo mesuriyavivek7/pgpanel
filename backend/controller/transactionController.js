@@ -1,6 +1,7 @@
 import CASHOUT from "../models/CASHOUT.js";
 import CUSTOMER from "../models/CUSTOMER.js";
 import CUSTOMERRENT from "../models/CUSTOMERRENT.js";
+import ACCOUNT from "../models/ACCOUNT.js"
 import EMPLOYEE from "../models/EMPLOYEE.js";
 import EMPLOYEESALARY from "../models/EMPLOYEESALARY.js";
 import INVENTORYPURCHASE from "../models/INVENTORYPURCHASE.js";
@@ -10,13 +11,23 @@ import TRANSACTION from "../models/TRANSACTION.js";
 
 export const createTransactionForCustomerRent = async (req, res, next) =>{
    try{
-     const {amount, payment_mode, customer, bank_account, month, year} = req.body 
+     const {mongoid, userType} = req 
      
+     const {amount, payment_mode, customer, bank_account, month, year} = req.body 
+
      if(!amount || !payment_mode || !customer || !month || !year) return res.status(400).json({message:"Please provide all required fields.",success:false})
 
      const existCustomer = await CUSTOMER.findById(customer)
 
      if(!existCustomer) return res.status(404).json({message:"Customer not found.",success:false})
+
+     if(userType === "Account"){
+       const account = await ACCOUNT.findById(mongoid) 
+
+       if(!account) return res.status(404).json({message:"Account manager not found.",success:false})
+
+       if(!account.branch.includes(existCustomer.branch)) return res.status(403).json({message:"You have not access to take rent for this for this customer.",success:false})
+     }
 
      if(amount < 0) return res.status(400).json({message:"amount value is invalid.",success:false})
 
@@ -54,6 +65,7 @@ export const createTransactionForCustomerRent = async (req, res, next) =>{
 
 export const createTransactionForEmployeeSalary = async (req, res, next) =>{
    try{
+      const {mongoid, userType} = req
       const {amount, payment_mode, employee, year, bank_account, month} = req.body
 
       if(!amount || !payment_mode || !bank_account || !employee || !year || !month){
@@ -63,6 +75,16 @@ export const createTransactionForEmployeeSalary = async (req, res, next) =>{
       const existEmployee = await EMPLOYEE.findById(employee)
 
       if(!existEmployee) return res.status(404).json({message:"Employee is not found.",success:false})
+
+      if(userType === "Account"){
+         const account = await ACCOUNT.findById(mongoid) 
+
+         if(!account) return res.status(404).json({message:"Account manager not found."})
+
+         if(!account.branch.includes(existEmployee.branch)){
+            return res.status(403).json({message:"You have not access to give salary for this employee.",success:false})
+         }
+      }
 
       if(amount < 0) return res.status(400).json({message:"Invalid amount value.",success:false})
 
@@ -98,10 +120,19 @@ export const createTransactionForEmployeeSalary = async (req, res, next) =>{
 
 export const createTransactionForInventory = async (req, res, next) =>{
    try{
+      const {mongoid, userType} = req 
       const {amount, payment_mode, branch, item_name, bank_account, item_type } = req.body
       
       if(!amount || !payment_mode || !bank_account || !branch || !item_name || !item_type){
          return res.status(400).json({message:"Please provide all required fields.",success:false})
+      }
+
+      if(userType === "Account"){
+         const account = await ACCOUNT.findById(mongoid) 
+
+         if(!account) return res.status(404).json({message:"Account manager not found.",success:false})
+
+         if(!account.branch.includes(branch)) return res.status(403).json({message:"You have not access to take inventory for this branch.",success:false})
       }
 
       if(amount < 0) return res.status(400).json({message:"amount value is invalid.",success:false})
@@ -135,6 +166,8 @@ export const createTransactionForInventory = async (req, res, next) =>{
 
 export const createTransactionForMonthlyPayment = async (req, res, next) =>{
    try{
+     const {mongoid, userType} = req
+      
      const {monthlypayment, amount, month, year, payment_mode, bank_account} = req.body
 
      if(!monthlypayment || !month || !year || !bank_account) return res.status(400).json({message:"Please provide all required fields.",success:false})
@@ -142,6 +175,14 @@ export const createTransactionForMonthlyPayment = async (req, res, next) =>{
      const existMonthlyPayment = await MONTHLYPAYMENT.findById(monthlypayment)
 
      if(!existMonthlyPayment) return res.status(404).json({message:"Monthly payment is not found.",success:false})
+
+     if(userType === "Account"){
+       const account = await ACCOUNT.findById(mongoid)
+
+       if(!account) return res.status(404).json({message:"Account manager not found.",success:false})
+
+       if(!account.branch.includes(existMonthlyPayment.branch)) return res.status(403).json({message:"You have not access to take monthly payment for this branch.",success:false})
+     }
 
      const {payment_name, branch} = existMonthlyPayment
 
@@ -214,12 +255,28 @@ export const createTransactionForCashout = async (req, res, next) =>{
 
 export const getAllTransactions = async (req, res, next) =>{
    try{
+      const {mongoid, userType} = req 
+
       const {branch, bank_account ,transactionType} = req.query
         
       let filter = {}
 
-      if(branch){
-         filter.branch = branch
+      if(userType === "Account"){      
+         const account = await ACCOUNT.findById(mongoid)
+
+         if(!account) return res.status(404).json({message:"Account manager not found.",success:false})
+
+         if(branch){
+            if(!account.branch.includes(branch)) return res.status(403).json({message:"You have not access to see transactions for this branch.",success:false})
+
+            filter.branch = branch
+         }else{
+            filter.branch = {$in:account.branch}
+         }
+      }else{
+         if(branch){
+            filter.branch = branch
+         }
       }
 
       if(bank_account) {

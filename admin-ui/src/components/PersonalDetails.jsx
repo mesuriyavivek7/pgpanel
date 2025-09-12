@@ -10,6 +10,7 @@ import USER from '../assets/user.png'
 import { getAdminDetails, uploadAdminLogo } from '../services/adminService';
 
 import ProfileForm from './ProfileForm';
+import ChangePassword from './ChangePassword';
 
 function PersonalDetails() {
   const logoInputRef = useRef(null)
@@ -18,6 +19,7 @@ function PersonalDetails() {
   const [preview,setPreview] = useState(null)
   const [logoLoader,setLogoLoader] = useState(false)
   const [openProfileForm,setOpenProfileForm] = useState(false)
+  const [openPasswordForm,setOpenPasswordForm] = useState(false)
 
 
   const handleFileChange = (e) =>{
@@ -75,10 +77,15 @@ function PersonalDetails() {
      if(refresh) handleGetUserDetails()
   }
 
+  const handleClosePasswordForm = () =>{
+    setOpenPasswordForm(false)
+  }
+
 
   return (
   <div className='p-4 border border-neutral-200 bg-white rounded-md flex gap-12 items-center'>
     {openProfileForm && <ProfileForm onClose={handleCloseProfileForm} userDetails={userDetails} ></ProfileForm>}
+    {openPasswordForm && <ChangePassword onClose={handleClosePasswordForm}></ChangePassword>}
     <div className='flex p-2 flex-col gap-2 items-center'>
        <div className='relative'>
          {preview && <div className='bg-red-500 rounded-full -right-2 absolute hover:bg-red-600  -top-1 p-1 flex justify-center items-center'><X onClick={handleRemoveFile} size={18} className=" text-white cursor-pointer"></X></div>}
@@ -114,7 +121,7 @@ function PersonalDetails() {
                     <Pencil size={18}></Pencil>
                     <span className='text-sm'>Edit Profile</span>
                    </button> 
-                <button className='p-2 cursor-pointer bg-gray-50 hover:bg-gray-100 rounded-md w-48 justify-center border border-neutral-300 flex items-center gap-2'>
+                <button onClick={()=>setOpenPasswordForm(true)} className='p-2 cursor-pointer bg-gray-50 hover:bg-gray-100 rounded-md w-48 justify-center border border-neutral-300 flex items-center gap-2'>
                     <Lock size={18}></Lock>
                     <span className='text-sm'>Change Password</span>
                 </button>

@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
+import LOGINMAPPING from '../models/LOGINMAPPING.js'
 
 dotenv.config()
 
@@ -15,6 +16,13 @@ export const verifyToken = async (req, res, next) =>{
  
         req.mongoid = decoded.mongoid
         req.userType = decoded.userType
+
+        if(req.userType === "Account"){
+            let isActiveAccount = await LOGINMAPPING.findOne({mongoid:req.mongoid, status:true}) 
+
+            if(!isActiveAccount) return res.status(403).json({message:"Your account is not active.",success:false})
+        }
+
         next()
 
     }catch(err){

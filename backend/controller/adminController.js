@@ -8,6 +8,7 @@ import { getMonthShortNames } from "../helper.js"
 import { removeFile } from "../utils/removeFile.js"
 import ADMIN from "../models/ADMIN.js"
 import LOGINMAPPING from "../models/LOGINMAPPING.js"
+import bcryptjs from 'bcryptjs'
 
 export const getDashboardSummery = async (req, res, next) =>{
     try{
@@ -241,6 +242,35 @@ export const updateAdminDetails = async (req, res, next) =>{
         await admin.save() 
 
         return res.status(200).json({message:"Admin details updated successfully.",success:true})
+
+    }catch(err){
+        next(err)
+    }
+}
+
+
+export const changePassword = async (req, res, next) =>{
+    try{
+       const {mongoid} = req 
+
+       const {password, current_password} = req.body 
+
+       if(!password || !current_password) return res.status(400).json({message:"Please provide all required fields.",success:false})
+
+       const loginmapping = await LOGINMAPPING.findOne({mongoid})
+
+       if(!loginmapping) return res.status(404).json({message:"Admin not found.",success:false})
+ 
+       const isMatch = await bcryptjs.compare(current_password, loginmapping.password) 
+       if(!isMatch) return res.status(401).json({message:"Current password is incorrect.",success:false})
+
+       const salt = await bcryptjs.genSalt(10);
+       const hashedPassword = await bcryptjs.hash(password, salt);
+
+       loginmapping.password = hashedPassword
+       await loginmapping.save() 
+
+       return res.status(200).json({message:"Password changed successfully.",success:true})
 
     }catch(err){
         next(err)

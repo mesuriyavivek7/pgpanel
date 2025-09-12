@@ -17,9 +17,9 @@ app.post('/inventory-purchase', verifyToken, createTransactionForInventory)
 app.post('/monthly-payment', verifyToken, createTransactionForMonthlyPayment)
 
 //For create transaction for cashout pay
-app.post('/cashout-pay', verifyToken, createTransactionForCashout)
+app.post('/cashout-pay', verifyToken, verifyAdmin, createTransactionForCashout)
 
 //For get all transactions
-app.get('/', verifyToken, verifyAdmin, getAllTransactions)
+app.get('/', verifyToken, getAllTransactions)
 
 export default app

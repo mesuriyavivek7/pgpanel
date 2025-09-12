@@ -60,6 +60,7 @@ function Breadcrumb({
         );
 
       case "/admin/branches/preview":
+      case "/account/branches/preview":
         return (
           <div className="flex w-full flex-col gap-1">
             <h1 className="text-2xl md:text-3xl font-semibold">
@@ -71,6 +72,7 @@ function Breadcrumb({
           </div>
         );
 
+      case "/account/customers":
       case "/admin/customers":
         return (
           <div className="flex justify-between items-center w-full">
@@ -110,6 +112,7 @@ function Breadcrumb({
         );
 
       case "/admin/employees":
+      case "/account/employees":
         return (
           <div className="flex justify-between items-center w-full">
             <h1 className="text-2xl md:text-3xl font-semibold">Employees</h1>
@@ -188,6 +191,7 @@ function Breadcrumb({
         );
 
       case "/admin/rents":
+      case "/account/rents":
         return (
           <div className="flex justify-between items-center w-full">
             <h1 className="text-2xl md:text-3xl font-semibold">
@@ -221,6 +225,7 @@ function Breadcrumb({
         );
 
       case "/admin/salary":
+      case "/account/salary":
         return (
           <div className="flex justify-between items-center w-full">
             <h1 className="text-2xl md:text-3xl font-semibold">
@@ -396,6 +401,26 @@ function Breadcrumb({
           </div>
         )
 
+
+      case "/account/branches":
+        return (
+          <div className="flex justify-between items-center w-full">
+            <h1 className="text-2xl md:text-3xl font-semibold">Branches</h1>
+            <div className="flex items-center gap-2">
+              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-48 md:w-72  flex items-center gap-2">
+                <Search className="text-gray-500" size={20}></Search>
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  type="text"
+                  className="flex-1 outline-none"
+                  placeholder="Search branch"
+                ></input>
+              </div>
+            </div>
+          </div>
+        );
+      
     }
   };
 

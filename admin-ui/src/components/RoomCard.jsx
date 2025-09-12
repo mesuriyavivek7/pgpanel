@@ -1,14 +1,17 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 //importing icons
 import { SquarePen } from 'lucide-react'
 
-function RoomCard({openForm,room}) {
+function RoomCard({openForm,room, type}) {
+  const {auth} = useAuth()
+
   const navigate = useNavigate()
 
   const handleNavigate = () =>{
-     navigate('/admin/branches/room/preview', {state:room._id})
+     navigate(auth.user.userType === "Account" ? '/account/branches/room/preview' : "/admin/branches/room/preview", {state:room._id})
   }
 
   return (

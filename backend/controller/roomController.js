@@ -51,8 +51,10 @@ export const createRoom = async (req, res, next) => {
 export const updateRoom = async (req, res, next) => {
     try {
         const { roomId } = req.params
+
         const { room_id, capacity, remark } = req.body
-        const { mongoid } = req
+
+        const { mongoid , userType} = req
 
         const room = await ROOM.findById(roomId)
 
@@ -97,6 +99,8 @@ export const updateRoom = async (req, res, next) => {
 
 export const getRoomByBranchId = async (req, res, next) => {
     try {
+        const { mongoid, userType } = req
+
         const { branchId } = req.params
 
         if (!branchId) return res.status(400).json({ message: "Please provide branch id.", success: false })
@@ -127,7 +131,7 @@ export const getRoomByBranchId = async (req, res, next) => {
 
 export const getRoomById = async (req, res, next) => {
     try {
-        const { roomId } = req.params
+        const { roomId, userType } = req.params
 
         if (!roomId) return res.status(400).json({ message: "Please provide room id.", success: false })
 

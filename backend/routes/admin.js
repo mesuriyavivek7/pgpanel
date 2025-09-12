@@ -1,6 +1,6 @@
 import express from 'express'
 import { verifyToken, verifyAdmin } from '../middleware/verifyUser.js'
-import { getAdminDetails, getDashboardSearch, getDashboardSummery, updateAdminDetails, uploadLogo } from '../controller/adminController.js'
+import { changePassword, getAdminDetails, getDashboardSearch, getDashboardSummery, updateAdminDetails, uploadLogo } from '../controller/adminController.js'
 import { logoMulter } from '../middleware/Upload.js'
 
 const app = express.Router()
@@ -20,5 +20,8 @@ app.post('/upload-logo', verifyToken, verifyAdmin, logoMulter, uploadLogo)
 
 //For update admin details
 app.put('/me', verifyToken, verifyAdmin, updateAdminDetails)
+
+//For change password 
+app.put('/change-password', verifyToken, changePassword)
 
 export default app

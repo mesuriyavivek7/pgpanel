@@ -1,10 +1,8 @@
 import express from 'express'
 import { verifyToken, verifyAdmin } from '../middleware/verifyUser.js'
 import {
-    changeStatus, createCustomer, getAllCustomer,
-    getAllCustomerByAcmanager, getCustomerByBranchId, getCustomerByRoomId,
+    changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId,
     getPendingCustomerRentList, updateCustomerDetails,
-    getPendingCustomerRentListByAcmanager
 } from '../controller/customerController.js'
 
 const app = express.Router()
@@ -13,10 +11,7 @@ const app = express.Router()
 app.post('/', verifyToken, createCustomer)
 
 //For get all customer
-app.get('/', verifyToken, verifyAdmin, getAllCustomer)
-
-//For get all customer by Acmanager
-app.get('/acmanager', verifyToken, getAllCustomerByAcmanager)
+app.get('/', verifyToken, getAllCustomer)
 
 //For get customer by room id
 app.get('/room/:roomId', verifyToken, getCustomerByRoomId)
@@ -33,6 +28,4 @@ app.put('/status/:customerId', verifyToken, changeStatus)
 //For get pending customer rents
 app.get('/pending-rent', verifyToken, getPendingCustomerRentList)
 
-//For get pending customer rents by Acmanager
-app.get('/pending-rent/acmanger', verifyToken, getPendingCustomerRentListByAcmanager)
 export default app

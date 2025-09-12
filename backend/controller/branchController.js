@@ -50,23 +50,61 @@ export const createBranch = async (req, res, next) => {
 
 export const getAllBranch = async (req, res, next) => {
   try {
-    const { searchQuery } = req.query;
-    let branch = [];
-    if (searchQuery) {
-      branch = await BRANCH.find({
-        branch_name: { $regex: searchQuery, $options: "i" },
-      }).sort({ createdAt: -1 });
-    } else {
-      branch = await BRANCH.find().sort({ createdAt: -1 });
+    const { searchQuery} = req.query;
+    const {userType} = req
+
+    if (userType === 'Admin') {
+      let branch = [];
+      if (searchQuery) {
+        branch = await BRANCH.find({
+          branch_name: { $regex: searchQuery, $options: "i" },
+        }).sort({ createdAt: -1 });
+      } else {
+        branch = await BRANCH.find().sort({ createdAt: -1 });
+      }
+
+      return res
+        .status(200)
+        .json({
+          message: "All Branches retrived successfully.",
+          success: true,
+          data: branch,
+        });
     }
 
-    return res
-      .status(200)
-      .json({
-        message: "All Branches retrived successfully.",
-        success: true,
-        data: branch,
-      });
+    if (userType === 'Account') {
+      const { mongoid } = req
+      const { searchQuery } = req.query;
+
+      const loginUser = await LOGINMAPPING.findOne({ mongoid, status: true })
+
+      if (!loginUser) {
+        return res.status(403).json({ message: "You are not authorized to access this data.", success: false })
+      }
+
+      let branches = []
+      const account = await ACCOUNT.findOne({ _id: mongoid })
+
+      if (!account) {
+        return res.status(404).json({ message: "Account manager not found.", success: false })
+      }
+
+      const branchIds = account.branch
+
+      let filter = { _id: { $in: branchIds } }
+      if (searchQuery) {
+        filter.branch_name = { $regex: searchQuery, $options: "i" }
+      }
+
+      branches = await BRANCH.find(filter).sort({ createdAt: -1 })
+
+      return res.status(200).json({ message: "All brach by manager retrived successfully.", success: true, data: branches })
+
+    }
+    else{
+      return res.status(404).json({ message:" Invalid User Type",success:false})
+    }
+
   } catch (err) {
     next(err);
   }
@@ -131,6 +169,18 @@ export const updateBranch = async (req, res, next) => {
 export const getBranchById = async (req, res, next) => {
   try {
     const { branchId } = req.params;
+    const {userType,mongoid} = req
+
+    if(userType === 'Account'){
+      const acmanager = await ACCOUNT.findOne({_id:mongoid})
+      if(!acmanager){
+        return res.status(404).json({message:"Account Manager Not Found.",success:false})
+      }
+
+      if(!acmanager.branch.includes(branchId)){
+        return res.status(403).json({message:"You are not Autherized to access this Branch.",success:false})
+      }
+    }
 
     if (!branchId)
       return res
@@ -159,6 +209,18 @@ export const getBranchById = async (req, res, next) => {
 export const getDashboardSummery = async (req, res, next) => {
   try {
     const { branchId } = req.params;
+    const {userType,mongoid} = req
+
+    if(userType === 'Account'){
+      const acmanager = await ACCOUNT.findOne({_id:mongoid})
+      if(!acmanager){
+        return res.status(404).json({message:"Account Manager Not Found.",success:false})
+      }
+      
+      if(!acmanager.branch.includes(branchId)){
+        return res.status(403).json({message:"You are not Autherized to access this Branch-Data.",success:false})
+      }
+    }
 
     if (!branchId)
       return res
@@ -188,37 +250,3 @@ export const getDashboardSummery = async (req, res, next) => {
     next(err);
   }
 };
-
-export const getAllBranchByManger = async (req, res, next) => {
-  try {
-    const { mongoid } = req
-    const { searchQuery } = req.query;
-
-    const loginUser = await LOGINMAPPING.findOne({mongoid, status: true})
-
-    if(!loginUser){
-      return res.status(403).json({message: "You are not authorized to access this data.", success: false})
-    }
-
-    let branches = []
-    const account = await ACCOUNT.findOne({ _id: mongoid })
-
-    if (!account) {
-      return res.status(404).json({ message: "Account manager not found.", success: false })
-    }
-
-    const branchIds = account.branch 
-
-    let filter = { _id: { $in: branchIds } }
-    if (searchQuery) {
-      filter.branch_name = { $regex: searchQuery, $options: "i" }
-    }
-
-    branches = await BRANCH.find(filter).sort({ createdAt: -1 })
-
-    return res.status(200).json({ message: "All brach by manager retrived successfully.", success: true, data: branches })
-
-  } catch (error) {
-    next(error)
-  }
-}

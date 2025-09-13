@@ -19,7 +19,6 @@ function BranchRooms({branchId}) {
     setLoading(true)
     try{
       const data = await getRoomByBranchId(branchId)
-      console.log('rooms->',data)
       setRooms(data)
     }catch(err){
       toast.error(err?.message)
@@ -69,7 +68,7 @@ function BranchRooms({branchId}) {
           <div className='grid grid-cols-4 items-stretch gap-4'>
              {
                rooms.map((room, index)=> (
-                 <RoomCard type={"Admin"} openForm={handleOpenForm} key={index} room={room}></RoomCard>
+                 <RoomCard openForm={handleOpenForm} key={index} room={room}></RoomCard>
                ))
              }
           </div>

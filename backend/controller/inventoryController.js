@@ -1,5 +1,6 @@
 import INVENTORYPURCHASE from "../models/INVENTORYPURCHASE.js";
 import TRANSACTION from "../models/TRANSACTION.js";
+import ACCOUNT from "../models/ACCOUNT.js";
 
 
 export const getAllInventoryTransaction = async (req, res, next) => {
@@ -7,7 +8,9 @@ export const getAllInventoryTransaction = async (req, res, next) => {
         const { searchQuery, branch } = req.query
         const { mongoid, userType } = req
 
-        let filter = {}
+        let filter = {
+            type: 'inventory_purchase'
+        };
 
         if (userType === 'Account') {
             const acmanager = await ACCOUNT.findById(mongoid)
@@ -23,7 +26,8 @@ export const getAllInventoryTransaction = async (req, res, next) => {
                 
                 filter.branch = branch
             } else {
-                filter = { branch: { $in: acmanager.branch } }
+                console.log("branch filter set")
+                filter.branch =  { $in: acmanager.branch } 
             }
 
         } else {
@@ -31,10 +35,6 @@ export const getAllInventoryTransaction = async (req, res, next) => {
                 filter.branch = branch
             }
         }
-
-        filter = {
-            type: 'inventory_purchase'
-        };
 
         let inventoryIds = []
         if (searchQuery) {
@@ -47,8 +47,6 @@ export const getAllInventoryTransaction = async (req, res, next) => {
             filter.refId = { $in: inventoryIds }
         }
 
-        console.log(filter)
-
         const transactions = await TRANSACTION.find(filter)
             .populate({
                 path: 'refId',
@@ -56,6 +54,8 @@ export const getAllInventoryTransaction = async (req, res, next) => {
             })
             .populate('branch')
             .sort({ createdAt: -1 })
+
+            
 
         return res.status(200).json({ message: "All transaction retrived successfully.", success: true, data: transactions })
 

@@ -104,6 +104,21 @@ let accountRoutes = [
     icon: Wallet,
     link: "/account/salary",
   },
+  {
+    label: "Inventory",
+    icon: Box,
+    link: "/account/inventory",
+  },
+  {
+    label: "Monthly Bills",
+    icon: BookText,
+    link: "/account/monthlybill",
+  },
+  {
+    label: "Transactions",
+    icon: ArrowLeftRight,
+    link: "/account/transactions",
+  },
 ];
 
 function SideBar({ showSideBar, type }) {

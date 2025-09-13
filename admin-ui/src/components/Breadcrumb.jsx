@@ -265,6 +265,7 @@ function Breadcrumb({
         );
 
       case "/admin/inventory":
+      case "/account/inventory":
         return (
           <div className="flex justify-between items-center w-full">
             <h1 className="text-2xl md:text-3xl font-semibold">Inventory</h1>
@@ -343,9 +344,7 @@ function Breadcrumb({
       case "/admin/cashout":
         return (
           <div className="flex justify-between items-center w-full">
-            <h1 className="text-2xl md:text-3xl font-semibold">
-              Cashout
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-semibold">Cashout</h1>
             <div className="flex items-center gap-2">
               <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-48 md:w-72  flex items-center gap-2">
                 <Search className="text-gray-500" size={20}></Search>
@@ -366,15 +365,14 @@ function Breadcrumb({
             </div>
           </div>
         );
-      
+
       case "/admin/transactions":
+      case "/account/transactions":
         return (
           <div className="flex justify-between items-center w-full">
-            <h1 className="text-2xl md:text-3xl font-semibold">
-              Transactions
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-semibold">Transactions</h1>
             <div className="flex items-center gap-2">
-            <select
+              <select
                 onChange={(e) => setSelectedBranch(e.target.value)}
                 value={selectedBranch}
                 className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
@@ -386,21 +384,21 @@ function Breadcrumb({
                   </option>
                 ))}
               </select>
-              <select 
-              value={selectedTransactions}
-              onChange={(e)=>setSelectedTransactions(e.target.value)}
-              className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none">
-                <option value={''}>All Transaction</option>
-                <option value={'customer_rent'}>Rent</option>
-                <option value={'employee_salary'}>Salary</option>
-                <option value={'monthly_bill'}>Monthly Bill</option>
-                <option value={'inventory_purchase'}>Inventory</option>
-                <option value={'cash_given'}>Cashout</option>
+              <select
+                value={selectedTransactions}
+                onChange={(e) => setSelectedTransactions(e.target.value)}
+                className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
+              >
+                <option value={""}>All Transaction</option>
+                <option value={"customer_rent"}>Rent</option>
+                <option value={"employee_salary"}>Salary</option>
+                <option value={"monthly_bill"}>Monthly Bill</option>
+                <option value={"inventory_purchase"}>Inventory</option>
+                <option value={"cash_given"}>Cashout</option>
               </select>
             </div>
           </div>
-        )
-
+        );
 
       case "/account/branches":
         return (
@@ -420,7 +418,39 @@ function Breadcrumb({
             </div>
           </div>
         );
-      
+
+      case "/account/monthlybill":
+        return (
+          <div className="flex justify-between items-center w-full">
+            <h1 className="text-2xl md:text-3xl font-semibold">
+              Monthly Bills
+            </h1>
+            <div className="flex items-center gap-2">
+              <div className="border rounded-2xl border-neutral-300 bg-white p-1.5 md:p-2 w-48 md:w-72  flex items-center gap-2">
+                <Search className="text-gray-500" size={20}></Search>
+                <input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  type="text"
+                  className="flex-1 outline-none"
+                  placeholder="Search bill"
+                ></input>
+              </div>
+              <select
+                onChange={(e) => setSelectedBranch(e.target.value)}
+                value={selectedBranch}
+                className="p-2 w-52 px-4 border rounded-2xl border-neutral-300 bg-white outline-none"
+              >
+                <option value={""}>All Branch</option>
+                {branch.map((item, index) => (
+                  <option key={index} value={item._id}>
+                    {item.branch_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        );
     }
   };
 

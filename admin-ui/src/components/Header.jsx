@@ -18,7 +18,7 @@ import { useAuth } from '../context/AuthContext';
 
 
 function Header({setShowSideBar}) {
-  const {setAuth} = useAuth()
+  const {auth, setAuth} = useAuth()
   const [openSearchBar,setOpenSearchBar] = useState(false)
   const navigate = useNavigate()
 
@@ -53,12 +53,15 @@ function Header({setShowSideBar}) {
          </div>
        </div>
        <div className='flex items-center gap-4'>
-         <Tooltip onClick={handleNavigateProfile} title="profile">
+         {
+          auth.user.userType === 'Admin' &&
+          <Tooltip onClick={handleNavigateProfile} title="profile">
           <User size={20} className='text-gray-500 cursor-pointer'></User>
          </Tooltip>
-         <Tooltip title="notifications">
+         }
+         {/* <Tooltip title="notifications">
          <Bell size={20} className='text-gray-500 cursor-pointer'></Bell>
-         </Tooltip>
+         </Tooltip> */}
          <Tooltip title="logout">
          <LogOut onClick={handleLogout} className='cursor-pointer text-red-500' size={20}></LogOut>
          </Tooltip>

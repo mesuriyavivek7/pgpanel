@@ -26,12 +26,7 @@ import Profile from './pages/admin/Profile';
 //Import Account components
 import AccountLayout from './layouts/AccountLayout';
 import AccountDashboard from './pages/account/AccountDashboard';
-import BranchAccount from './pages/account/BranchAccount';
-import BranchPreviewAccount from './pages/account/BranchPreviewAccount';
-import RoomPreviewAccount from './pages/account/RoomPreviewAccount';
-import CustomerAccount from './pages/account/CustomerAccount';
-import EmployeeAccount from './pages/account/EmployeeAccount';
-import CustomerRentAccount from './pages/account/CustomerRentAccount';
+
 
 function App() {
   const {auth} = useAuth();
@@ -71,13 +66,16 @@ function App() {
        {/* Account Routes */}
        <Route path='/account' element={<ProtectedRoute allowed={['Account']}><AccountLayout></AccountLayout></ProtectedRoute>}>
           <Route index element={<AccountDashboard></AccountDashboard>}></Route>
-          <Route path='branches' element={<BranchAccount></BranchAccount>}></Route>
-          <Route path='branches/preview' element={<BranchPreviewAccount></BranchPreviewAccount>}></Route>
-          <Route path='branches/room/preview' element={<RoomPreviewAccount></RoomPreviewAccount>}></Route>
-          <Route path='customers' element={<CustomerAccount></CustomerAccount>}></Route>
-          <Route path='employees' element={<EmployeeAccount></EmployeeAccount>}></Route>
-          <Route path='rents' element={<CustomerRent></CustomerRent>}></Route>
+          <Route path='branches' element={<Branch></Branch>}></Route>
+          <Route path='branches/preview' element={<BranchPreview></BranchPreview>}></Route>
+          <Route path='branches/room/preview' element={<RoomPreview></RoomPreview>}></Route>
+          <Route path='customers' element={<Customer></Customer>}></Route>
+          <Route path='employees' element={<Employee></Employee>}></Route>
+          <Route path='rents' element={<Customer></Customer>}></Route>
           <Route path='salary' element={<EmployeeSalary></EmployeeSalary>}></Route>
+          <Route path='inventory' element={<Inventory></Inventory>}></Route>
+          <Route path='monthlybill' element={<MonthlyBill></MonthlyBill>}></Route>
+          <Route path='transactions' element={<Transaction></Transaction>}></Route>
        </Route>
 
        <Route path="*" element={<Navigate to={auth?.user?.userType === 'Admin' ? '/admin' : '/account'} />} />

@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 //Importing icons
 import { Image } from 'lucide-react';
@@ -9,9 +10,10 @@ import { SquarePen } from 'lucide-react';
 
 function BranchCard({openForm,item,type}) {
   const navigate = useNavigate()
+  const {auth} = useAuth()
 
   const handleClick = (item) =>{
-    navigate(type === 'Admin' ?  '/admin/branches/preview' : '/account/branches/preview',{state:item._id})
+    navigate(auth.user.userType === 'Admin' ?  '/admin/branches/preview' : '/account/branches/preview',{state:item._id})
   }
 
   return (

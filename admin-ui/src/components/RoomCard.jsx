@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 //importing icons
 import { SquarePen } from 'lucide-react'
 
-function RoomCard({openForm,room, type}) {
+function RoomCard({openForm,room}) {
   const {auth} = useAuth()
 
   const navigate = useNavigate()

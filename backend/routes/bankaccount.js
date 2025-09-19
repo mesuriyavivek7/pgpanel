@@ -9,7 +9,7 @@ const app = express.Router()
 app.post('/',verifyToken, verifyAdmin, createBankAccount)
 
 //For get all bank accounts
-app.get('/', verifyToken, getAllBankAccount)
+app.get('/', verifyToken, verifyAdmin, getAllBankAccount)
 
 app.put('/:accountId', verifyToken, updateBankAccount)
 

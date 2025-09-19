@@ -12,4 +12,4 @@ const inventoryPurchaseSchema = new mongoose.Schema({
      amount:Number
 },{timestamps:true})
 
-export default mongoose.model('Inventorypurchase',inventoryPurchaseSchema)
+export default mongoose.model('Inventorypurchase',inventoryPurchaseSchema) 

@@ -8,7 +8,7 @@ import { Building2 } from 'lucide-react';
 import { SquarePen } from 'lucide-react';
 
 
-function BranchCard({openForm,item,type}) {
+function BranchCard({openForm,item}) {
   const navigate = useNavigate()
   const {auth} = useAuth()
 
@@ -22,7 +22,7 @@ function BranchCard({openForm,item,type}) {
       className="rounded-2xl relative hover:scale-[1.02] transition-all duration-300 overflow-hidden shadow-sm border cursor-pointer border-neutral-300"
     >
       {
-        type === "Admin" && 
+        auth.user.userType === "Admin" && 
         <div className="absolute p-1 right-2 top-2 hover:bg-black/80 transition-all duration-300 bg-black/40 backdrop-blur-sm rounded-md">
          <SquarePen 
          onClick={(e)=>{

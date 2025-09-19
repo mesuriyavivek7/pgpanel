@@ -6,8 +6,6 @@ import { useState } from "react";
 function AdminLayout() {
   const [showSideBar,setShowSideBar] = useState(false)
 
-
-
   return (
     <div className="flex relative w-screen h-screen overflow-hidden">
         <SideBar showSideBar={showSideBar} type='admin'></SideBar>

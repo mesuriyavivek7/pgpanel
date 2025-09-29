@@ -54,7 +54,7 @@ function AdminDashboard() {
       <Breadcrumb></Breadcrumb>
 
       {/* State Card */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div className="p-4 bg-white border border-neutral-300 rounded-md flex items-center">
           <div className="flex flex-col gap-4">
             <span className="text-[#7E7E85]">Total Branches</span>
@@ -77,6 +77,18 @@ function AdminDashboard() {
           <div className="flex flex-col gap-4">
             <span className="text-[#7E7E85]">Total Account Manager</span>
             <h1 className="text-4xl font-semibold">{dashboardData?.totalAcManagers}</h1>
+          </div>
+        </div>
+        <div className="p-4 bg-white border border-neutral-300 rounded-md flex items-center">
+          <div className="flex flex-col gap-4">
+            <span className="text-[#7E7E85]">Pending Rents</span>
+            <h1 className="text-4xl font-semibold">{dashboardData?.pendingRents}</h1>
+          </div>
+        </div>
+        <div className="p-4 bg-white border border-neutral-300 rounded-md flex items-center">
+          <div className="flex flex-col gap-4">
+            <span className="text-[#7E7E85]">Vacant Seats</span>
+            <h1 className="text-4xl font-semibold">{dashboardData?.vacantSeats}</h1>
           </div>
         </div>
       </div>
@@ -138,7 +150,7 @@ function AdminDashboard() {
                <div className="h-48 flex flex-col gap-2 overflow-scroll">
                  {
                   dashboardData?.accounts?.map((account, index) =>(
-                   <div className="flex bg-neutral-100 rounded-md justify-between items-center p-2">
+                   <div key={index} className="flex bg-neutral-100 rounded-md justify-between items-center p-2">
                     <div className="flex items-center gap-2">
                        <div className="h-8 w-8 bg-white flex justify-center items-center rounded-full">
                          <UserRound size={24} className="text-gray-500"></UserRound>
@@ -154,6 +166,31 @@ function AdminDashboard() {
           </div>
         </div>
       </div>
+
+
+      <div className="flex flex-col gap-4">
+        <h1 className="text-2xl font-semibold">Branch Analytics <span className="text-gray-500 text-lg">({view})</span>  </h1>
+        <div className="grid grid-cols-3 gap-4">
+          {
+            dashboardData?.branchWiseData?.map((branch, index) => (
+              <div key={index} className="p-4 bg-white border border-neutral-300 rounded-md flex flex-col gap-4">
+                <h1 className="text-lg font-semibold">{branch?.branch_name}</h1>
+                <div className="grid grid-cols-2 gap-2 items-center">
+                   <div className="flex flex-col">
+                     <span className="text-sm text-[#71717a] font-medium">Total Profits</span>
+                     <span className="font-bold">{convertIntoRupees(view === "monthly"? branch?.totalCurrentYearProfit :branch?.totalMonthlyProfit)}</span>
+                   </div>
+                   <div className="flex flex-col">
+                     <span className="text-sm text-[#71717a] font-medium">Total Expenses</span>
+                     <span className="font-bold">{convertIntoRupees(view === "monthly"? branch?.totalCurrentYearExpenditure :branch?.totalMonthlyExpenditure)}</span>
+                   </div>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+
     </div>
   );
 }

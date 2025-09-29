@@ -8,14 +8,18 @@ import INVENTORYPURCHASE from "../models/INVENTORYPURCHASE.js";
 import MONTHLYPAYMENT from "../models/MONTHLYPAYMENT.js";
 import MONTHLYPAYMENTRECEIPT from "../models/MONTHLYPAYMENTRECEIPT.js";
 import TRANSACTION from "../models/TRANSACTION.js";
+import RENTATTEMPT from "../models/RENTATTEMPT.js";
+import SALARYATTEMPT from "../models/SALARYATTEMPT.js";
 
 export const createTransactionForCustomerRent = async (req, res, next) =>{
    try{
      const {mongoid, userType} = req 
      
-     const {amount, payment_mode, customer, bank_account, month, year} = req.body 
+     const {amount, payment_mode, customer, bank_account, month, year, isDeposite} = req.body 
 
-     if(!amount || !payment_mode || !customer || !month || !year) return res.status(400).json({message:"Please provide all required fields.",success:false})
+     if(!customer || !month || !year || isDeposite===null || isDeposite===undefined) return res.status(400).json({message:"Please provide all required fields.",success:false})
+
+     if(!isDeposite && (!amount || !payment_mode || !bank_account)) return res.status(400).json({message:"Please provide all required fields.",success:false})
 
      const existCustomer = await CUSTOMER.findById(customer)
 
@@ -33,29 +37,54 @@ export const createTransactionForCustomerRent = async (req, res, next) =>{
 
      if(month < 1 || month > 12) return res.status(400).json({message:"Month value is invalid.",success:false})
 
-     //Create new recipt
-     const newCustomerRentRecipt = new CUSTOMERRENT({
-        customer,
-        amount,
-        month,
-        year
-     })
+     const customerRent = await CUSTOMERRENT.findOne({customer, month, year})
+
+     if(!customerRent) return res.status(404).json({message:"Customer rent is not found for this month.",success:false})
+
+     if(customerRent.status === "Paid") return res.status(200).json({message:"Customer rent is already paid for this month", success:true})
+
+     if(isDeposite){
+        customerRent.isDeposite = true
+        customerRent.status = 'Paid'
+
+        await customerRent.save()
+
+        return res.status(200).json({message:"Customer rent as deposite paid successfully.",success:true,data:customerRent})
+     }else{
+        let pendingAmount = customerRent.rent - customerRent.paid_amount
+
+        if(amount > pendingAmount){
+           return res.status(400).json({message:`You have only pending amount of ${pendingAmount}`,success:false})
+        }
  
-     await newCustomerRentRecipt.save()
+       customerRent.paid_amount += amount
+       if(pendingAmount === amount){  
+         customerRent.status = "Paid"
+       }
 
-     const newTransaction = new TRANSACTION({
-        transactionType:'income',
-        type:'customer_rent',
-        refModel:'Customerrent',
-        refId:newCustomerRentRecipt,
-        payment_mode,
-        branch:existCustomer.branch,
-        bank_account
-     })
+       const newRentAttempt = new RENTATTEMPT({
+           customer,
+           amount,
+           month,
+           year
+       })
 
-     await newTransaction.save()
+       const newTransaction = new TRANSACTION({
+           transactionType:'income',
+           type:'rent_attempt',
+           refModel:'Rentattempt',
+           refId:newRentAttempt._id,
+           payment_mode,
+           branch:existCustomer.branch,
+           bank_account
+       })
 
-     return res.status(200).json({message:"New transaction created successfully.",success:true,data:newTransaction})
+       await customerRent.save()
+       await newRentAttempt.save()
+       await newTransaction.save()
+
+       return res.status(200).json({message:"New transaction created successfully.",success:true,data:newTransaction})
+    }
      
    }catch(err){
      next(err)
@@ -90,25 +119,43 @@ export const createTransactionForEmployeeSalary = async (req, res, next) =>{
 
       if(month < 1 || month > 12) return res.status(400).json({message:"Invalid month value",success:false})
 
-      const newEmployeeSalaryRecipt = new EMPLOYEESALARY({
+      const employeeSalary = await EMPLOYEESALARY.findOne({employee, month, year})
+
+      if(!employeeSalary) return res.status(404).json({message:"Employee salary is not found for this month.",success:false})
+
+      if(employeeSalary.status === "Paid") return res.status(200).json({message:"Employee salary is already paid for this month.",success:true})
+
+      let pendingAmount = employeeSalary.salary - employeeSalary.paid_amount
+
+      if(amount > pendingAmount){   
+         return res.status(400).json({message:`You have only pending amount of ${pendingAmount}`,success:false})
+      }
+
+      employeeSalary.paid_amount += amount
+
+      if(pendingAmount === amount){
+         employeeSalary.status = "Paid"
+      }
+
+      const newSalaryAttempt = new SALARYATTEMPT({
          employee,
          amount,
          month,
          year
       })
 
-      await newEmployeeSalaryRecipt.save()
-
-      const newTransaction = new TRANSACTION({
+      const newTransaction = new TRANSACTION({     
          transactionType:'expense',
-         type:'employee_salary',
-         refModel:'Employeesalary',
-         refId:newEmployeeSalaryRecipt,
+         type:'salary_attempt',
+         refModel:'Salaryattempt',
+         refId:newSalaryAttempt._id,
          payment_mode,
          branch:existEmployee.branch,
          bank_account
       })
 
+      await employeeSalary.save()
+      await newSalaryAttempt.save()
       await newTransaction.save()
 
       return res.status(200).json({message:"New Transaction created for employee salary.",success:true, data:newTransaction})

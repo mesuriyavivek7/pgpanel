@@ -19,6 +19,7 @@ import monthlyRoute from './routes/monthly.js'
 import bankaccountRoute from './routes/bankaccount.js'
 import cashoutRoute from './routes/cashout.js'
 import adminRoute from './routes/admin.js'
+import './utils/cron.js';
 
 // Get the current file's path
 const __filename = fileURLToPath(import.meta.url);

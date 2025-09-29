@@ -159,21 +159,6 @@ function MonthlyBillPay({monthlyBill, onClose}) {
                   )}
                 </div>
               </div>
-              <div className='flex flex-col gap-1'>
-                <label>Select Bank Account <span className='text-red-500 text-sm'>*</span></label>
-                <div className='flex flex-col'>
-                   <select 
-                   {...register('bank_account')}
-                   className='p-2 border border-neutral-300 rounded-md outline-none'>
-                     <option value={''}>-- Select Bank Account --</option>
-                     {
-                       bankAccounts.map((item, index) => (
-                        <option value={item._id} key={index}>{item.account_holdername}</option>
-                       ))
-                     }
-                   </select>
-                </div>
-              </div>
               <div className="flex flex-col gap-2">
                 <label>Select Payment Mode</label>
                 <div className="flex flex-col">
@@ -191,6 +176,21 @@ function MonthlyBillPay({monthlyBill, onClose}) {
                       {errors.payment_mode.message}
                     </span>
                   )}
+                </div>
+              </div>
+              <div className='flex flex-col gap-1'>
+                <label>Select Bank Account <span className='text-red-500 text-sm'>*</span></label>
+                <div className='flex flex-col'>
+                   <select 
+                   {...register('bank_account')}
+                   className='p-2 border border-neutral-300 rounded-md outline-none'>
+                     <option value={''}>-- Select Bank Account --</option>
+                     {
+                       bankAccounts.map((item, index) => (
+                        <option value={item._id} key={index}>{item.account_holdername}</option>
+                       ))
+                     }
+                   </select>
                 </div>
               </div>
               <div className='flex justify-center items-center'>

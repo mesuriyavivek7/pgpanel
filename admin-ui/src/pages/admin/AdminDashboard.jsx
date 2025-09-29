@@ -39,6 +39,7 @@ function AdminDashboard() {
     const handleGetDashboardSummery = async () =>{
        try{
          const data = await getDashboardSummery()
+         console.log(data)
          setDashboardData(data)
        }catch(err){
          toast.error(err?.message)
@@ -75,7 +76,7 @@ function AdminDashboard() {
         <div className="p-4 bg-white border border-neutral-300 rounded-md flex items-center">
           <div className="flex flex-col gap-4">
             <span className="text-[#7E7E85]">Total Account Manager</span>
-            <h1 className="text-4xl font-semibold">4</h1>
+            <h1 className="text-4xl font-semibold">{dashboardData?.totalAcManagers}</h1>
           </div>
         </div>
       </div>

@@ -29,5 +29,11 @@ export const customerSchema = z.object({
     .min(1, { message: "Please select branch." }),
 
   joining_date: z
-    .date({ invalid_type_error: "Joining date is required." })
+    .date({ invalid_type_error: "Joining date is required." }),
+  
+  payment_mode: z.string().min(1, {message:"Please select payment mode."}),
+
+  bank_account: z.
+  string()
+  .min(1, {message:"Please select bank account."}),
 });

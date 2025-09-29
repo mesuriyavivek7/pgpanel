@@ -28,4 +28,5 @@ app.put('/status/:customerId', verifyToken, changeStatus)
 //For get pending customer rents
 app.get('/pending-rent', verifyToken, getPendingCustomerRentList)
 
+
 export default app

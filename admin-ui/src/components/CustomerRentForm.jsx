@@ -33,15 +33,17 @@ function CustomerRentForm({selectedCustomer, onClose}) {
     register,
     handleSubmit,
     formState: {errors},
-    reset
+    watch
   } = useForm({
     mode:'onChange',
     resolver: zodResolver(customerRentSchema),
     defaultValues: {
         customer: selectedCustomer.customerId,
         amount:0,
+        isDeposite:false,
         date:`${selectedCustomer?.pending_rent[0]?.month}-${selectedCustomer?.pending_rent[0]?.year}`,
-        payment_mode:''
+        payment_mode:'',
+        bank_account:''
     }
   })
 
@@ -58,6 +60,8 @@ function CustomerRentForm({selectedCustomer, onClose}) {
 
     handleGetBankAccounts()
   },[])
+
+  console.log(errors)
 
 
   const handlePay = async (formData) =>{
@@ -82,6 +86,9 @@ function CustomerRentForm({selectedCustomer, onClose}) {
       let rent = selectedCustomer?.pending_rent.find((item) => item.month === Number(month) && item.year === Number(year))
       setSelectedRent(rent)
   }
+
+  const isDeposite = watch("isDeposite")
+
 
   return (
     <div className='fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center'>
@@ -115,22 +122,38 @@ function CustomerRentForm({selectedCustomer, onClose}) {
               </div>
            </div>
            <form onSubmit={handleSubmit(handlePay)} className='flex flex-col gap-4'>
-              <div className='flex flex-col gap-2'>
-                <label>Pending Rent</label>
-                <span>₹{selectedRent?.pending}</span>
-              </div>
-              <div className='flex flex-col gap-2'>
-                <label>Amount <span className='text-sm text-red-500'>*</span></label>
-                <div className='flex flex-col'>
+              <div className='grid grid-cols-2 items-start gap-2'>
+                <div className='flex flex-col gap-2'>
+                 <label>Is Deposite Month? <span className='text-sm text-red-500'>*</span></label>
+                 <div className='flex items-center gap-2'>
                   <input 
-                  type='number'
-                  {...register("amount",{ valueAsNumber: true })}
-                  className="p-2 border border-neutral-300 rounded-md outline-none"
-                  placeholder="Enter amount"
+                  type='checkbox'
+                  {...register("isDeposite")}
+                  className="w-4 h-4 cursor-pointer"
                   ></input>
-                  {errors.amount && <span className='text-sm text-red-500'>{errors.amount.message}</span>}
+                  <span className='text-sm text-gray-500'>(If checked, rent will be adjusted from deposite amount.)</span>
+                 </div>
+                </div>
+                <div className='flex flex-col gap-1'> 
+                  <label>Pending Amount</label>
+                  <span>₹{selectedRent?.pending}</span>
                 </div>
               </div>
+             {
+              !isDeposite && 
+              <div className='flex flex-col gap-2'>
+               <label>Amount <span className='text-sm text-red-500'>*</span></label>
+               <div className='flex flex-col'>
+                 <input 
+                 type='number'
+                 {...register("amount",{ valueAsNumber: true })}
+                 className="p-2 border border-neutral-300 rounded-md outline-none"
+                 placeholder="Enter amount"
+                 ></input>
+                 {errors.amount && <span className='text-sm text-red-500'>{errors.amount.message}</span>}
+               </div>
+              </div>
+             }
               <div className='flex flex-col gap-2'>
                 <label>Select Month/Year <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
@@ -148,7 +171,27 @@ function CustomerRentForm({selectedCustomer, onClose}) {
                  {errors.date && <span className='text-sm text-red-500'>{errors.date.message}</span>}
                 </div>
               </div>
-              <div className='flex flex-col gap-1'>
+              {
+                !isDeposite &&
+                <div className='flex flex-col gap-2'>
+                 <label>Select Payment Mode <span className='text-sm text-red-500'>*</span></label>
+                 <div className='flex flex-col'>
+                    <select
+                    {...register('payment_mode')}
+                    className='p-2 border border-neutral-300 rounded-md outline-none'
+                    >
+                      <option value={''}>-- Select Payment Mode --</option>
+                      <option value={'cash'}>Cash</option>
+                      <option value={'upi'}>UPI</option>
+                      <option value={'bank_transfer'}>Bank Transfer</option>
+                    </select>
+                    {errors.payment_mode && <span className='text-sm text-red-500'>{errors.payment_mode.message}</span>}
+                 </div>
+                </div>
+              }
+              {
+                !isDeposite && 
+                <div className='flex flex-col gap-1'>
                 <label>Select Bank Account <span className='text-red-500 text-sm'>*</span></label>
                 <div className='flex flex-col'>
                    <select 
@@ -162,22 +205,8 @@ function CustomerRentForm({selectedCustomer, onClose}) {
                      }
                    </select>
                 </div>
-              </div>
-              <div className='flex flex-col gap-2'>
-                <label>Select Payment Mode <span className='text-sm text-red-500'>*</span></label>
-                <div className='flex flex-col'>
-                    <select
-                    {...register('payment_mode')}
-                    className='p-2 border border-neutral-300 rounded-md outline-none'
-                    >
-                      <option value={''}>-- Select Payment Mode --</option>
-                      <option value={'cash'}>Cash</option>
-                      <option value={'upi'}>UPI</option>
-                      <option value={'bank_transfer'}>Bank Transfer</option>
-                    </select>
-                    {errors.payment_mode && <span className='text-sm text-red-500'>{errors.payment_mode.message}</span>}
-                </div>
-              </div>
+               </div> 
+              }
               <div className="flex justify-center items-center">
               <button type="submit" disabled={loading} className="p-2 hover:bg-blue-600 w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium">
                 {

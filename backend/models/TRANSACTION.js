@@ -7,7 +7,7 @@ const transactionSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['customer_rent', 'employee_salary', 'monthly_bill', 'inventory_purchase', 'cash_given'],
+        enum: ['deposite','rent_attempt', 'salary_attempt', 'monthly_bill', 'inventory_purchase', 'cash_given'],
         required: true
     },
     refModel:{

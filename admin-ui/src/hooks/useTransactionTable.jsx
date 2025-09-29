@@ -37,9 +37,11 @@ export const useTransactionTable = () =>{
 
     const getTransactionType = (transactionType) =>{
         switch(transactionType){
-          case "customer_rent":
+          case "deposite":  
+            return "Deposite"
+          case "rent_attempt":
             return "Rent"
-          case "employee_salary":
+          case "salary_attempt":
             return "Salary"
           case "inventory_purchase":
             return "Inventory"

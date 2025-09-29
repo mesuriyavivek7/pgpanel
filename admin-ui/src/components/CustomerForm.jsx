@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import { getAllBranch } from '../services/branchService';
 import { getRoomByBranchId } from '../services/roomService';
 import { createCustomer, updateCustomer } from '../services/customerService';
+import { getAllBankAccount } from '../services/bankAccountService';
 
 
 function CustomerForm({selectedCustomer, onClose}) {
@@ -17,6 +18,7 @@ function CustomerForm({selectedCustomer, onClose}) {
   const [rooms,setRooms] = useState([])
   const [selectedBranch,setSelectedBranch] = useState('')
   const [selectedRoom,setSelectedRoom] = useState('')
+  const [bankAccounts,setBankAccounts] = useState([])
   
   const {
     register,
@@ -33,7 +35,9 @@ function CustomerForm({selectedCustomer, onClose}) {
        mobile_no:'',
        joining_date:new Date().toISOString().split("T")[0],
        branch:'',
-       room:''
+       room:'',
+       bank_account:'',
+       payment_mode:''
     }
   })
 
@@ -46,7 +50,9 @@ function CustomerForm({selectedCustomer, onClose}) {
         mobile_no:selectedCustomer.mobile_no,
         joining_date:new Date(selectedCustomer.joining_date).toISOString().split("T")[0],
         branch:selectedCustomer.branch._id,
-        room:selectedCustomer.room._id
+        room:selectedCustomer.room._id,
+        payment_mode:'NONE',
+        bank_account:'NONE'
       })
       setSelectedBranch(selectedCustomer.branch._id)
       setSelectedRoom(selectedCustomer.room._id)
@@ -96,6 +102,21 @@ function CustomerForm({selectedCustomer, onClose}) {
     }
   }
 
+  useEffect(()=> {
+    const handleGetBankAccounts = async () =>{
+       try{
+        const data = await getAllBankAccount()
+        setBankAccounts(data)
+       }catch(err){
+        console.log(err)
+        toast.error(err?.message)
+       }
+    }
+
+    handleGetBankAccounts()
+  },[])
+
+
   const handleEditCustomer = async (customerData) => {
      setLoading(true)
      try{
@@ -118,7 +139,8 @@ function CustomerForm({selectedCustomer, onClose}) {
             <h1 className="text-2xl font-semibold">{selectedCustomer ? "Edit Customer" : "Add Customer"}</h1>
            </div>
            <form onSubmit={handleSubmit(selectedCustomer ? handleEditCustomer : handleAddCustomer)} className='flex flex-col gap-4'>
-             <div className='flex flex-col gap-2'>
+             <div className='grid grid-cols-2 items-center gap-4'>
+              <div className='flex flex-col gap-2'>
                 <label>Customer Name <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                  <input 
@@ -129,8 +151,8 @@ function CustomerForm({selectedCustomer, onClose}) {
                  ></input>
                  {errors.customer_name && <span className='text-sm text-red-500'>{errors.customer_name.message}</span>}
                 </div>
-             </div>
-             <div className='flex flex-col gap-2'>
+              </div>
+              <div className='flex flex-col gap-2'>
                 <label>Mobile No <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                   <input 
@@ -141,8 +163,10 @@ function CustomerForm({selectedCustomer, onClose}) {
                   ></input>
                   {errors.mobile_no && <span className='text-sm text-red-500'>{errors.mobile_no.message}</span>}
                 </div>
+              </div>
              </div>
-             <div className='flex flex-col gap-2'>
+              <div className='grid grid-cols-2 items-center gap-4'>
+              <div className='flex flex-col gap-2'>
                 <label>Deposite Amount <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                   <input 
@@ -153,8 +177,8 @@ function CustomerForm({selectedCustomer, onClose}) {
                   ></input>
                   {errors.deposite_amount && <span className='text-sm text-red-500'>{errors.deposite_amount.message}</span>}
                 </div>
-             </div>
-             <div className='flex flex-col gap-2'>
+              </div>
+              <div className='flex flex-col gap-2'>
                 <label>Rent Amount <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                   <input 
@@ -165,8 +189,11 @@ function CustomerForm({selectedCustomer, onClose}) {
                   ></input>
                   {errors.rent_amount && <span className='text-sm text-red-500'>{errors.rent_amount.message}</span>}
                 </div>
+              </div>
              </div>
-             <div className='flex flex-col gap-2'>
+            
+             <div className='grid grid-cols-2 items-center gap-4'>
+              <div className='flex flex-col gap-2'>
                  <label>Branch <span className='text-sm text-red-500'>*</span></label>
                  <div className='flex flex-col'>
                  <select 
@@ -182,8 +209,8 @@ function CustomerForm({selectedCustomer, onClose}) {
                  </select>
                  {errors.branch && <span className='text-sm text-red-500'>{errors.branch.message}</span>}
                  </div>
-             </div>
-             <div className='flex flex-col gap-2'>
+              </div>
+              <div className='flex flex-col gap-2'>
                  <label>Room <span className='text-sm text-red-500'>*</span></label>
                  <div className='flex flex-col'>
                  <select 
@@ -199,7 +226,48 @@ function CustomerForm({selectedCustomer, onClose}) {
                  </select>
                  {errors.room && <span className='text-sm text-red-500'>{errors.room.message}</span>}
                  </div>
+              </div>
              </div>
+
+            {
+              !selectedCustomer &&
+              <div className='grid grid-cols-2 items-center gap-4'>
+              <div className='flex flex-col gap-1'>
+                <label>Select Bank Account (For Dep) <span className='text-red-500 text-sm'>*</span></label>
+                <div className='flex flex-col'>
+                   <select 
+                   {...register('bank_account')}
+                   className='p-2 border border-neutral-300 rounded-md outline-none'>
+                     <option value={''}>-- Select Bank Account --</option>
+                     {
+                       bankAccounts.map((item, index) => (
+                        <option value={item._id} key={index}>{item.account_holdername}</option>
+                       ))
+                     }
+                   </select>
+                   {errors.bank_account && <span className='text-sm text-red-500'>{errors.bank_account.message}</span>}
+                </div>
+              </div>
+
+              <div className='flex flex-col gap-2'>
+                <label>Select Payment Mode (For Dep) <span className='tex-sm text-red-500'>*</span></label>
+                <div className='flex flex-col'>
+                    <select
+                    {...register('payment_mode')}
+                    className='p-2 border border-neutral-300 rounded-md outline-none'
+                    >
+                      <option value={''}>-- Select Payment Mode --</option>
+                      <option value={'cash'}>Cash</option>
+                      <option value={'upi'}>UPI</option>
+                      <option value={'bank_transfer'}>Bank Transfer</option>
+                    </select>
+                    {errors.payment_mode && <span className='text-sm text-red-500'>{errors.payment_mode.message}</span>}
+                </div>
+              </div>
+
+             </div>
+            }
+
              <div className='flex flex-col gap-2'>
                 <label>Joining Date <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>

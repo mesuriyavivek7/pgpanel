@@ -4,7 +4,8 @@ import TRANSACTION from "../models/TRANSACTION.js";
 import ACCOUNT from "../models/ACCOUNT.js";
 import BRANCH from "../models/BRANCH.js";
 import LOGINMAPPING from "../models/LOGINMAPPING.js";
-import { populate } from "dotenv";
+import EMPLOYEESALARY from "../models/EMPLOYEESALARY.js";
+
 
 
 export const createEmployee = async (req, res, next) => {
@@ -40,7 +41,15 @@ export const createEmployee = async (req, res, next) => {
             added_by_type: userType
         })
 
+        const newEmployeeSalary = new EMPLOYEESALARY({
+            employee: newEmployee._id,
+            salary,
+            month: (new Date()).getMonth() + 1,
+            year: (new Date()).getFullYear()
+        })
+
         await newEmployee.save()
+        await newEmployeeSalary.save()
 
         return res.status(200).json({ message: "New employee created successfully.", success: true })
 
@@ -175,121 +184,193 @@ export const changeEmployeeStatus = async (req, res, next) => {
     }
 }
 
-export const getEmployeePendingSalaries = async (req, res, next) => {
-    try {
-        const { searchQuery, branch } = req.query
-        let filter = { status: true }
+// export const getEmployeePendingSalaries = async (req, res, next) => {
+//     try {
+//         const { searchQuery, branch } = req.query
+//         let filter = { status: true }
 
-        const { userType, mongoid } = req
+//         const { userType, mongoid } = req
 
-        let employees = []
+//         let employees = []
 
-        if (userType === 'Account') {
+//         if (userType === 'Account') {
 
-            const acManager = await ACCOUNT.findById(mongoid)
+//             const acManager = await ACCOUNT.findById(mongoid)
 
-            if(!acManager){
-                return res.status(404).json({ message: "Account Manager Not Found.", success: false })
-            }
+//             if(!acManager){
+//                 return res.status(404).json({ message: "Account Manager Not Found.", success: false })
+//             }
 
-            const branchId = acManager.branch
+//             const branchId = acManager.branch
 
-            if (branch) {
+//             if (branch) {
                 
-                if (!branchId.includes(branch)) {
-                    return res.status(403).json({ message: "You are not Autherized to access this Branch.", success: false })
-                }
+//                 if (!branchId.includes(branch)) {
+//                     return res.status(403).json({ message: "You are not Autherized to access this Branch.", success: false })
+//                 }
 
-                filter.branch = branch
-            } else {
-                filter.branch = { $in: branchId }
-            }
+//                 filter.branch = branch
+//             } else {
+//                 filter.branch = { $in: branchId }
+//             }
 
-        } else {
-            if(branch){
-                filter.branch = branch
-            }
+//         } else {
+//             if(branch){
+//                 filter.branch = branch
+//             }
+//         }
+
+//         if (searchQuery) {
+//             filter.employee_name = { $regex: searchQuery, $options: 'i' };
+//         }
+
+//         employees = await EMPLOYEE.find(filter).populate('branch')
+
+//         if (searchQuery) {
+//             filter.employee_name = { $regex: searchQuery, $options: 'i' };
+//         }
+
+//         const result = []
+
+//         for (const employee of employees) {
+//             const monthList = getMonthYearList(employee.createdAt)
+
+//             const salaryTransaction = await TRANSACTION.find({
+//                 transactionType: 'expense',
+//                 type: 'employee_salary',
+//                 refModel: 'Employeesalary',
+//                 branch: employee.branch._id
+//             }).populate({
+//                 path: 'refId',
+//                 model: 'Employeesalary',
+//                 match: { employee: employee._id }
+//             })
+
+//             const paidSalaryMap = {}
+
+//             for (const tx of salaryTransaction) {
+//                 const entry = tx.refId;
+//                 if (!entry) continue;
+
+//                 const key = `${entry.month}-${entry.year}`;
+//                 if (!paidSalaryMap[key]) {
+//                     paidSalaryMap[key] = 0
+//                 }
+
+//                 paidSalaryMap[key] += entry.amount;
+//             }
+
+//             const pendingSalary = [];
+
+//             for (const { month, year } of monthList) {
+//                 const key = `${month}-${year}`
+//                 const paid = paidSalaryMap[key] || 0
+//                 const pending = Math.max(employee.salary - paid, 0)
+
+//                 if (pending > 0) {
+//                     const today = new Date();
+//                     const currentMonth = today.getMonth() + 1;
+//                     const currentYear = today.getFullYear()
+
+//                     const isRequired = !(month === currentMonth && year === currentYear)
+
+//                     pendingSalary.push({
+//                         month,
+//                         year,
+//                         pending,
+//                         required: isRequired
+//                     })
+//                 }
+//             }
+
+//             if (pendingSalary.length > 0) {
+//                 result.push({
+//                     employeeId: employee._id,
+//                     employee_name: employee.employee_name,
+//                     employee_type: employee.employee_type,
+//                     mobile_no: employee.mobile_no,
+//                     salary: employee.salary,
+//                     branch: employee.branch.branch_name,
+//                     pending_salary: pendingSalary
+//                 })
+//             }
+//         }
+
+//         return res.status(200).json({ message: "All salary details retrived successfully.", success: true, data: result })
+
+//     } catch (err) {
+//         next(err)
+//     }
+// }
+
+
+export const getEmployeePendingSalaries = async (req, res, next) =>{
+    try{
+      const {searchQuery, branch} = req.query 
+
+      const {mongoid, userType} = req 
+
+      let filter = {status: true}
+
+      if (searchQuery) {
+        filter.employee_name = { $regex: searchQuery, $options: 'i' };
+      }
+
+      if(userType === "Account"){
+        const account = await ACCOUNT.findById(mongoid) 
+
+        if(!account) return res.status(400).json({message:"Account manager not found.",success:false})
+
+        if(branch) {
+            if(!account.branch.includes(branch)) return res.status(403).json({message:"You have no access to get pending rents of requested branch.",success:false})
+
+            filter.branch = branch
+        }else{
+            filter.branch = { $in: account.branch };
         }
-
-        if (searchQuery) {
-            filter.employee_name = { $regex: searchQuery, $options: 'i' };
+      }else {
+        if(branch){
+            filter.branch = branch
         }
+      }
 
-        employees = await EMPLOYEE.find(filter).populate('branch')
+      const employees = await EMPLOYEE.find(filter)
+      .populate('branch')
+      .sort({createdAt:-1})
 
-        if (searchQuery) {
-            filter.employee_name = { $regex: searchQuery, $options: 'i' };
-        }
+      const result = [] 
 
-        const result = []
+      for (const employee of employees){
+        const pendingSalary = await EMPLOYEESALARY.find({employee:employee._id, status:'Pending'})
 
-        for (const employee of employees) {
-            const monthList = getMonthYearList(employee.createdAt)
+        const pendingSalaryMap = [] 
 
-            const salaryTransaction = await TRANSACTION.find({
-                transactionType: 'expense',
-                type: 'employee_salary',
-                refModel: 'Employeesalary',
-                branch: employee.branch._id
-            }).populate({
-                path: 'refId',
-                model: 'Employeesalary',
-                match: { employee: employee._id }
+        for(const employeeSalary of pendingSalary){
+            const isRequired = !(employeeSalary.month === (new Date()).getMonth() + 1 && employeeSalary.year === (new Date()).getFullYear())
+            pendingSalaryMap.push({
+                month:employeeSalary.month,
+                year:employeeSalary.year,
+                pending: employeeSalary.salary - employeeSalary.paid_amount,
+                required:isRequired
             })
-
-            const paidSalaryMap = {}
-
-            for (const tx of salaryTransaction) {
-                const entry = tx.refId;
-                if (!entry) continue;
-
-                const key = `${entry.month}-${entry.year}`;
-                if (!paidSalaryMap[key]) {
-                    paidSalaryMap[key] = 0
-                }
-
-                paidSalaryMap[key] += entry.amount;
-            }
-
-            const pendingSalary = [];
-
-            for (const { month, year } of monthList) {
-                const key = `${month}-${year}`
-                const paid = paidSalaryMap[key] || 0
-                const pending = Math.max(employee.salary - paid, 0)
-
-                if (pending > 0) {
-                    const today = new Date();
-                    const currentMonth = today.getMonth() + 1;
-                    const currentYear = today.getFullYear()
-
-                    const isRequired = !(month === currentMonth && year === currentYear)
-
-                    pendingSalary.push({
-                        month,
-                        year,
-                        pending,
-                        required: isRequired
-                    })
-                }
-            }
-
-            if (pendingSalary.length > 0) {
-                result.push({
-                    employeeId: employee._id,
-                    employee_name: employee.employee_name,
-                    employee_type: employee.employee_type,
-                    mobile_no: employee.mobile_no,
-                    salary: employee.salary,
-                    branch: employee.branch.branch_name,
-                    pending_salary: pendingSalary
-                })
-            }
         }
 
-        return res.status(200).json({ message: "All salary details retrived successfully.", success: true, data: result })
+        if(pendingSalaryMap.length > 0){
+            result.push({
+                employeeId:employee._id,
+                employee_name:employee.employee_name,
+                employee_type:employee.employee_type,
+                mobile_no:employee.mobile_no,
+                salary:employee.salary,
+                branch:employee.branch.branch_name,
+                pending_salary:pendingSalaryMap
+            })
+        }
+      }
 
-    } catch (err) {
-        next(err)
+      return res.status(200).json({message:"All pending salary details retrived successfully.",success:true,data:result})
+
+    }catch(err){
+      next(err)
     }
 }

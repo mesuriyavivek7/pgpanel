@@ -9,6 +9,7 @@ import { removeFile } from "../utils/removeFile.js"
 import ADMIN from "../models/ADMIN.js"
 import LOGINMAPPING from "../models/LOGINMAPPING.js"
 import bcryptjs from 'bcryptjs'
+import ROOM from "../models/ROOM.js"
 
 export const getDashboardSummery = async (req, res, next) =>{
     try{
@@ -17,6 +18,15 @@ export const getDashboardSummery = async (req, res, next) =>{
         const totalEmployees = await EMPLOYEE.find({status:true}).countDocuments()
         const totalCustomers = await CUSTOMER.find({status:true}).countDocuments()
         const totalBranch = await BRANCH.find().countDocuments()
+        const totalAcManagers = await LOGINMAPPING.find({status:true, userType:'Account'}).countDocuments()
+        const vacantSeats = await ROOM.aggregate([
+            {
+              $group: {
+                _id: null,
+                totalVacant: { $sum: { $subtract: ["$capacity", "$filled"] } }
+              }
+            }
+        ]);
         
 
         const transactions = await TRANSACTION.find()
@@ -110,7 +120,9 @@ export const getDashboardSummery = async (req, res, next) =>{
             accounts: accountsData,
             totalBranch,
             totalCustomers,
-            totalEmployees
+            totalEmployees,
+            totalAcManagers,
+            vacantSeats:vacantSeats.length > 0 ? vacantSeats[0].totalVacant : 0
         },message:"Dashboard summery retrived successfully.",success:true})
 
     }catch(err){

@@ -5,7 +5,19 @@ const employeeSalarySchema = new mongoose.Schema({
     type:mongoose.Schema.Types.ObjectId,
     ref:'Employee'
    },
-   amount:Number,
+   salary:{
+      type:Number,
+      required:true
+   },
+   paid_amount:{
+      type:Number,
+      default:0
+   },
+   status:{
+      type:String,
+      enum: ['Paid','Pending'],
+      default:'Pending'
+   },
    month:Number,
    year:Number
 },{timestamps:true}) 

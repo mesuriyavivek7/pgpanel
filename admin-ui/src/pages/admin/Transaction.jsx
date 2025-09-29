@@ -17,9 +17,6 @@ function Transaction() {
 
   const {rows, columns, loading, refetch} = useTransactionTable() 
 
-  console.log(selectedBranch)
-  console.log(selectedTransactions)
-
   useEffect(()=>{
      refetch(selectedBranch, selectedTransactions)
   },[selectedBranch,selectedTransactions])

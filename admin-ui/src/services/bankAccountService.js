@@ -35,3 +35,39 @@ export const updateBankAccount = async (accountId,data) =>{
     throw new Error(errMessage)
   }
 }
+
+//For reset bank account balance
+export const resetBankAccount = async (accountId) =>{
+  try{
+    const response = await api.post(`/bankaccount/reset/${accountId}`)
+    return response.data.data
+  }catch(err){
+    console.log(err)
+    const errMessage = err?.response?.data?.message || "Something went wrong."
+    throw new Error(errMessage)
+  }
+}
+
+//For reset all bank account 
+export const resetAllBankAccount = async () =>{
+  try{
+    const response = await api.post('/bankaccount/resetall')
+    return response.data.data
+  }catch(err){
+    console.log(err)
+    const errMessage = err?.response?.data?.message || "Something went wrong."
+    throw new Error(errMessage)
+  }
+}
+
+//For Delete bank account
+export const deleteBankAccount = async (accountId) =>{
+  try{
+    const response = await api.delete(`/bankaccount/${accountId}`)
+    return response.data.data
+  }catch(err){
+    console.log(err)
+    const errMessage = err?.response?.data?.message || "Something went wrong."
+    throw new Error(errMessage)
+  }
+}

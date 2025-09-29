@@ -2,14 +2,14 @@ import BRANCH from "../models/BRANCH.js";
 import CUSTOMER from "../models/CUSTOMER.js";
 import ROOM from "../models/ROOM.js";
 import TRANSACTION from "../models/TRANSACTION.js";
-import { getMonthYearList } from "../helper.js";
-import LOGINMAPPING from "../models/LOGINMAPPING.js";
 import ACCOUNT from "../models/ACCOUNT.js";
+import DEPOSITEAMOUNT from "../models/DEPOSITEAMOUNT.js";
+import CUSTOMERRENT from "../models/CUSTOMERRENT.js";
 
 export const createCustomer = async (req, res, next) => {
     try {
         const { mongoid, userType } = req
-        const { customer_name, mobile_no, deposite_amount, rent_amount, room, branch, joining_date } = req.body
+        const { customer_name, mobile_no, deposite_amount, rent_amount, room, branch, joining_date, bank_account, payment_mode } = req.body
 
         if(userType === "Account"){
             const account = await ACCOUNT.findById(mongoid)
@@ -33,6 +33,7 @@ export const createCustomer = async (req, res, next) => {
 
         if (existRoom.filled >= existRoom.capacity) return res.status(400).json({ message: "Room is already full. Cannot add more customers.", success: false })
 
+        //Create new customer
         const newCustomer = await CUSTOMER({
             customer_name,
             mobile_no,
@@ -45,10 +46,42 @@ export const createCustomer = async (req, res, next) => {
             added_by_type: userType
         })
 
+        //Create new deposite
+        const deposite = new DEPOSITEAMOUNT({   
+            customer: newCustomer._id, 
+            amount: deposite_amount 
+        })
+
+        await deposite.save()
+
+        //Create transaction for deposite amount
+        const newTransaction = new TRANSACTION({
+            transactionType: 'income',
+            type: 'deposite',
+            refModel: 'Depositeamount',
+            refId: deposite._id,
+            bank_account,
+            branch,
+            payment_mode,
+        })
+
+        //Create customer rent for current month with paid amount = 0
+        const newCustomerRent = new CUSTOMERRENT({
+            customer: newCustomer._id,
+            rent: rent_amount,
+            paid_amount: 0,
+            status:'Pending',
+            month: new Date().getMonth() + 1,
+            year: new Date().getFullYear()
+        })
+
+
         existRoom.filled = existRoom.filled + 1
 
         await existRoom.save()
         await newCustomer.save()
+        await newTransaction.save()
+        await newCustomerRent.save()
 
         return res.status(200).json({ message: "New customer created successfully.", success: true, data: newCustomer })
 
@@ -200,7 +233,7 @@ export const updateCustomerDetails = async (req, res, next) => {
         const { customerId } = req.params
         const {mongoid, userType} = req 
 
-        const { customer_name, mobile_no, deposite_amount, room, branch, joining_date } = req.body
+        const { customer_name, mobile_no, deposite_amount, room, branch, rent_amount, joining_date } = req.body
 
         if (!customerId) return res.status(400).json({ message: "Please provide customer id.", success: false })
 
@@ -225,7 +258,34 @@ export const updateCustomerDetails = async (req, res, next) => {
         }
 
         if (customer_name) customer.customer_name = customer_name
-        if (mobile_no) customer.deposite_amount = deposite_amount
+        if (deposite_amount){
+
+            const customerDeposite = await DEPOSITEAMOUNT.findOne({customer: customerId})
+
+            if(!customerDeposite) {
+
+                const newDeposite = new DEPOSITEAMOUNT({
+                    customer: customerId,
+                    amount: deposite_amount
+                })
+
+                await newDeposite.save()
+            }else{
+                customerDeposite.amount = deposite_amount
+                await customerDeposite.save()
+            }
+
+            customer.deposite_amount = deposite_amount
+        }
+        if(rent_amount) {
+
+            //HERE ADD LOGIC TO UPDATE CUSTOMER RENT IF MONTHLY RENT IS CHANGE
+            // const month = new Date().getMonth() + 1
+            // const year = new Date().getFullYear()
+            // const customerRent = await CUSTOMERRENT.findOne({customer: customerId, month, year})
+
+            customer.rent_amount = rent_amount
+        }
         if (room) customer.room = room
         if (branch) customer.branch = branch
         if (joining_date) customer.joining_date = joining_date
@@ -282,15 +342,124 @@ export const changeStatus = async (req, res, next) => {
 
 
 
-export const getPendingCustomerRentList = async (req, res, next) => {
-    try {
-        const { searchQuery, branch } = req.query
-        const {mongoid, userType} = req
+// export const getPendingCustomerRentList = async (req, res, next) => {
+//     try {
+//         const { searchQuery, branch } = req.query
+//         const {mongoid, userType} = req
+//         let filter = {
+//             status: true
+//         }
+
+//         if (searchQuery) {
+//             filter.customer_name = { $regex: searchQuery, $options: 'i' };
+//         }
+
+//         if(userType === "Account"){
+//             const account = await ACCOUNT.findById(mongoid) 
+
+//             if(!account) return res.status(400).json({message:"Account manager not found.",success:false})
+
+//             if(branch) {
+//                 if(!account.branch.includes(branch)) return res.status(403).json({message:"You have no access to get pending rents of requested branch.",success:false})
+
+//                 filter.branch = branch
+//             }else{
+//                 filter.branch = { $in: account.branch };
+//             }
+//         }else {
+//             if(branch){
+//                 filter.branch = branch
+//             }
+//         }
+
+//         const customers = await CUSTOMER.find(filter)
+//             .populate('branch')
+//             .populate('room')
+
+//         const result = []
+
+//         for (const customer of customers) {
+//             const monthList = getMonthYearList(customer.joining_date)
+
+//             const rentTransaction = await TRANSACTION.find({
+//                 transactionType: 'income',
+//                 type: 'customer_rent',
+//                 refModel: 'Customerrent',
+//                 branch: customer.branch._id
+//             }).populate({
+//                 path: 'refId',
+//                 model: 'Customerrent',
+//                 match: { customer: customer._id }
+//             })
+
+//             const paidRentMap = {}
+
+//             for (const tx of rentTransaction) {
+//                 const entry = tx.refId;
+//                 if (!entry) continue;
+
+//                 const key = `${entry.month}-${entry.year}`;
+//                 if (!paidRentMap[key]) {
+//                     paidRentMap[key] = 0
+//                 }
+
+//                 paidRentMap[key] += entry.amount;
+//             }
+
+//             const pendingRent = [];
+
+//             for (const { month, year } of monthList) {
+//                 const key = `${month}-${year}`
+//                 const paid = paidRentMap[key] || 0
+//                 const pending = Math.max(customer.rent_amount - paid, 0)
+
+//                 if (pending > 0) {
+//                     const today = new Date();
+//                     const currentMonth = today.getMonth() + 1;
+//                     const currentYear = today.getFullYear()
+
+//                     const isRequired = !(month === currentMonth && year === currentYear)
+
+//                     pendingRent.push({
+//                         month,
+//                         year,
+//                         pending,
+//                         required: isRequired
+//                     })
+//                 }
+//             }
+
+//             if (pendingRent.length > 0) {
+//                 result.push({
+//                     customerId: customer._id,
+//                     customer_name: customer.customer_name,
+//                     branch: customer.branch,
+//                     room: customer.room,
+//                     mobile_no: customer.mobile_no,
+//                     rent_amount: customer.rent_amount,
+//                     pending_rent: pendingRent
+//                 })
+//             }
+
+//         }
+
+//         return res.status(200).json({ message: "Pending customer list fetched successfully.", success: true, data: result })
+
+//     } catch (err) {
+//         next(err)
+//     }
+// }
+
+export const getPendingCustomerRentList = async (req, res, next) =>{
+    try{
+        const { searchQuery, branch } = req.query 
+
+        const {mongoid, userType} = req 
         let filter = {
-            status: true
+            status: true 
         }
 
-        if (searchQuery) {
+        if(searchQuery){
             filter.customer_name = { $regex: searchQuery, $options: 'i' };
         }
 
@@ -315,61 +484,26 @@ export const getPendingCustomerRentList = async (req, res, next) => {
         const customers = await CUSTOMER.find(filter)
             .populate('branch')
             .populate('room')
+            .sort({createdAt:-1})
 
-        const result = []
+        const result = [] 
 
-        for (const customer of customers) {
-            const monthList = getMonthYearList(customer.joining_date)
+        for (const customer of customers){
+            const pendingRents = await CUSTOMERRENT.find({customer: customer._id, status:'Pending'})
 
-            const rentTransaction = await TRANSACTION.find({
-                transactionType: 'income',
-                type: 'customer_rent',
-                refModel: 'Customerrent',
-                branch: customer.branch._id
-            }).populate({
-                path: 'refId',
-                model: 'Customerrent',
-                match: { customer: customer._id }
-            })
+            const pendingRentMap = [] 
 
-            const paidRentMap = {}
-
-            for (const tx of rentTransaction) {
-                const entry = tx.refId;
-                if (!entry) continue;
-
-                const key = `${entry.month}-${entry.year}`;
-                if (!paidRentMap[key]) {
-                    paidRentMap[key] = 0
-                }
-
-                paidRentMap[key] += entry.amount;
+            for(const customerRent of pendingRents){
+                const isRequired = !(customerRent.month === (new Date().getMonth() + 1) && customerRent.year === new Date().getFullYear())
+                pendingRentMap.push({
+                    month:customerRent.month,
+                    year:customerRent.year,
+                    pending: customerRent.rent - customerRent.paid_amount,
+                    required:isRequired
+                })
             }
 
-            const pendingRent = [];
-
-            for (const { month, year } of monthList) {
-                const key = `${month}-${year}`
-                const paid = paidRentMap[key] || 0
-                const pending = Math.max(customer.rent_amount - paid, 0)
-
-                if (pending > 0) {
-                    const today = new Date();
-                    const currentMonth = today.getMonth() + 1;
-                    const currentYear = today.getFullYear()
-
-                    const isRequired = !(month === currentMonth && year === currentYear)
-
-                    pendingRent.push({
-                        month,
-                        year,
-                        pending,
-                        required: isRequired
-                    })
-                }
-            }
-
-            if (pendingRent.length > 0) {
+            if(pendingRentMap.length > 0){
                 result.push({
                     customerId: customer._id,
                     customer_name: customer.customer_name,
@@ -377,7 +511,7 @@ export const getPendingCustomerRentList = async (req, res, next) => {
                     room: customer.room,
                     mobile_no: customer.mobile_no,
                     rent_amount: customer.rent_amount,
-                    pending_rent: pendingRent
+                    pending_rent: pendingRentMap
                 })
             }
 
@@ -385,7 +519,7 @@ export const getPendingCustomerRentList = async (req, res, next) => {
 
         return res.status(200).json({ message: "Pending customer list fetched successfully.", success: true, data: result })
 
-    } catch (err) {
+    }catch(err){
         next(err)
     }
 }

@@ -6,7 +6,6 @@ import { toast } from 'react-toastify'
 import { deleteMonthlyBill } from '../services/monthlyBillService'
 
 function ConfirmationBox({onClose, monthlyBill}) {
-  console.log('bill---->',monthlyBill)
   const [loader,setLoader] = useState(false)
 
   const handleDeleteMonthlyBill = async () =>{

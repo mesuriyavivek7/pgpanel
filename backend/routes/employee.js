@@ -19,5 +19,4 @@ app.put('/status/:employeeId', verifyToken, changeEmployeeStatus)
 //For get employee salary details
 app.get('/salary-details', verifyToken, getEmployeePendingSalaries)
 
-
 export default app

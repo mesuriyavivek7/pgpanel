@@ -1,4 +1,5 @@
 import BANKACCOUNT from "../models/BANKACCOUNT.js";
+import RESETACCOUNT from "../models/RESETACCOUNT.js";
 import TRANSACTION from "../models/TRANSACTION.js";
 
 export const createBankAccount = async (req, res, next) =>{
@@ -26,34 +27,63 @@ export const createBankAccount = async (req, res, next) =>{
 
 export const getAllBankAccount = async (req, res, next) =>{
     try{
-        const allAccounts = await BANKACCOUNT.find()
+        const allAccounts = await BANKACCOUNT.find({status:'active'})
 
         const transactions = await TRANSACTION.find()
         .populate('refId')
         .populate('bank_account')
 
+        //Fetch all reset once 
+        const resets = await RESETACCOUNT.find()
+
         const accountData = allAccounts.map(acc => {
-            const accTx = transactions.filter(t => 
-                t.bank_account && t.bank_account._id.toString() === acc._id.toString())
-    
-                let balance = 0;
-                accTx.forEach(tx => {
-                    if(!tx.refId?.amount) return 
-                    if(tx.transactionType === "income"){
-                        balance += tx.refId.amount
-                    }else{
-                        balance -= tx.refId.amount
-                    }
-                });
-    
-                return {
-                    _id:acc._id,
-                    account_holdername: acc.account_holdername,
-                    current_balance: balance
-                }
+            //Get all reset docs where this account is included
+            const accResets = resets.filter(r => r.bankaccount.some(b => b.toString() === acc._id.toString()))
+
+            //if multiple reset then take latest one
+            let latestResetDate = null 
+            if (accResets.length > 0) {
+                latestResetDate = accResets
+                  .map(r => new Date(r.resetDate))
+                  .sort((a, b) => b - a)[0]
+            }
+
+           // Filter transactions for this account
+           let accTx = transactions.filter(
+              t => t.bank_account && t.bank_account._id.toString() === acc._id.toString()
+           )
+
+           // Apply reset filter if exists
+           if (latestResetDate) {
+             accTx = accTx.filter(t => new Date(t.createdAt) > latestResetDate)
+           }
+
+           //Calculate balance 
+           let balance = 0
+           accTx.forEach(tx => {
+            if (!tx.refId?.amount) return
+            if (tx.transactionType === "income") {
+            balance += tx.refId.amount
+           } else {
+             balance -= tx.refId.amount
+           }
+           })
+
+          return {
+            _id: acc._id,
+            account_holdername: acc.account_holdername,
+            current_balance: balance,
+            last_reset: latestResetDate || null
+          }
+
         })
 
-        return res.status(200).json({message:"All bank accounts retrived successfully.",success:true, data:accountData})
+        return res.status(200).json({
+            message: "All bank accounts retrieved successfully.",
+            success: true,
+            data: accountData,
+        })
+
     }catch(err){
         next(err)
     }
@@ -67,7 +97,7 @@ export const updateBankAccount = async (req, res, next) =>{
 
         if(!accountId) return res.status(400).json({message:"Please provide account id.",success:false}) 
 
-        const bankAccount = await BANKACCOUNT.findById(accountId) 
+        const bankAccount = await BANKACCOUNT.findOne({_id:accountId, status:'active'}) 
 
         if(bankAccount){
 
@@ -91,4 +121,106 @@ export const updateBankAccount = async (req, res, next) =>{
 }
 
 
+export const deleteBankAccount = async (req, res, next) =>{
+    try{
+        const {accountId} = req.params 
 
+        if(!accountId) return res.status(400).json({message:"Please provide account id.",success:false}) 
+
+        const bankAccount = await BANKACCOUNT.findById(accountId) 
+
+        if(!bankAccount) return res.status(404).json({message:"Bank account not found.",success:false})
+
+        const transactions = await TRANSACTION.find()
+        .populate('refId')
+        .populate('bank_account')
+
+        //Fetch all reset once 
+        const resets = await RESETACCOUNT.find()
+
+        const accResets = resets.filter(r => r.bankaccount.some(b => b.toString() === bankAccount._id.toString()))
+
+        //If multiple reset then take latest one
+        let latestResetDate = null 
+
+        if (accResets.length > 0) {
+            latestResetDate = accResets
+              .map(r => new Date(r.resetDate))
+              .sort((a, b) => b - a)[0]
+        }
+
+        // Filter transactions for this account
+        let accTx = transactions.filter(
+            t => t.bank_account && t.bank_account._id.toString() === bankAccount._id.toString()
+        )
+
+        //Apply reset filter if exists
+        if (latestResetDate) {
+            accTx = accTx.filter(t => new Date(t.createdAt) > latestResetDate)
+        }
+
+        //Calculate balance 
+        let balance = 0
+        accTx.forEach(tx => {
+         if (!tx.refId?.amount) return
+         if (tx.transactionType === "income") {
+         balance += tx.refId.amount
+        } else {
+          balance -= tx.refId.amount
+        }
+        })
+
+        if(balance === 0){
+            bankAccount.status = 'deleted'
+            await bankAccount.save()
+
+            return res.status(200).json({message:"Your account is deleted successfully.",status:true})
+
+        }else{
+            return res.status(200).json({message:"You can't delete your account. first of all you need to reset your account.",status:false})
+        }
+    }catch(err){
+        next(err)
+    }
+}
+
+
+export const resetBankAccount = async (req, res, next) =>{
+    try{
+        const {accountId} = req.params 
+
+        if(!accountId) return res.status(400).json({message:"Please provide account id.",success:false})
+
+        const accountIds = [accountId]
+
+        const newResetBankAccount = new RESETACCOUNT({bankaccount:accountIds})
+
+        await newResetBankAccount.save()
+
+        return res.status(200).json({message:"Bank account reset successfully.",success:true,data:newResetBankAccount})
+
+    }catch(err){
+        next(err)
+    }
+}
+
+export const resetAllBankAccount = async (req, res, next) =>{
+    try{
+        const allAccounts = await BANKACCOUNT.find()
+
+        if(allAccounts.length === 0) return res.status(400).json({message:"No bank account found.", success: false})
+
+        const accountIds = allAccounts.map(acc => acc._id)
+
+        const newResetBankAccount = new RESETACCOUNT({
+            bankaccount:accountIds
+        })
+
+        await newResetBankAccount.save()
+
+        return res.status(200).json({message:"All bank account reset successfully.", success: true})
+
+    }catch(err){
+        next(err)
+    }
+}

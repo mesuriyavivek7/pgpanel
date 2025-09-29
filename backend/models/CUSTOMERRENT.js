@@ -5,7 +5,23 @@ const customerrentSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'Customer'
     },
-    amount:Number,
+    rent:{
+      type:Number,
+      required:true
+    },
+    paid_amount:{
+      type:Number,
+      default:0
+    },
+    status:{
+      type:String,
+      enum: ['Paid','Pending'],
+      default:'Pending'
+    },
+    isDeposite:{
+      type:Boolean,
+      default:false
+    },
     month:Number,
     year:Number
 },{timestamps:true})

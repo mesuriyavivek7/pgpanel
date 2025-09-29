@@ -137,6 +137,21 @@ function InventoryForm({onClose}) {
                   {errors.branch && <span className='text-sm text-red-500'>{errors.branch.message}</span>}
                 </div>
               </div>
+              <div className='flex flex-col gap-2'>
+                <label>Select Payment Mode <span className='tex-sm text-red-500'>*</span></label>
+                <div className='flex flex-col'>
+                    <select
+                    {...register('payment_mode')}
+                    className='p-2 border border-neutral-300 rounded-md outline-none'
+                    >
+                      <option value={''}>-- Select Payment Mode --</option>
+                      <option value={'cash'}>Cash</option>
+                      <option value={'upi'}>UPI</option>
+                      <option value={'bank_transfer'}>Bank Transfer</option>
+                    </select>
+                    {errors.payment_mode && <span className='text-sm text-red-500'>{errors.payment_mode.message}</span>}
+                </div>
+              </div>
               <div className='flex flex-col gap-1'>
                 <label>Select Bank Account <span className='text-red-500 text-sm'>*</span></label>
                 <div className='flex flex-col'>
@@ -151,21 +166,6 @@ function InventoryForm({onClose}) {
                      }
                    </select>
                    {errors.bank_account && <span className='text-sm text-red-500'>{errors.bank_account.message}</span>}
-                </div>
-              </div>
-              <div className='flex flex-col gap-2'>
-                <label>Select Payment Mode <span className='tex-sm text-red-500'>*</span></label>
-                <div className='flex flex-col'>
-                    <select
-                    {...register('payment_mode')}
-                    className='p-2 border border-neutral-300 rounded-md outline-none'
-                    >
-                      <option value={''}>-- Select Payment Mode --</option>
-                      <option value={'cash'}>Cash</option>
-                      <option value={'upi'}>UPI</option>
-                      <option value={'bank_transfer'}>Bank Transfer</option>
-                    </select>
-                    {errors.payment_mode && <span className='text-sm text-red-500'>{errors.payment_mode.message}</span>}
                 </div>
               </div>
               <div className="flex justify-center items-center">

@@ -1,5 +1,5 @@
 import express from 'express'
-import { createBankAccount, deleteBankAccount, getAllBankAccount, resetAllBankAccount, resetBankAccount, updateBankAccount } from '../controller/bankAccountController.js'
+import { createBankAccount, deleteBankAccount, getAllBankAccount, resetAllBankAccount, resetBankAccount, setDefaultBankAccount, updateBankAccount } from '../controller/bankAccountController.js'
 import { verifyToken, verifyAdmin } from '../middleware/verifyUser.js'
 
 const app = express.Router()
@@ -22,5 +22,8 @@ app.post('/reset/:accountId', verifyToken, verifyAdmin, resetBankAccount)
 
 //For reset all bank accounts 
 app.post('/resetall', verifyToken, verifyAdmin, resetAllBankAccount)
+
+//Set bank account to default 
+app.put('/setdefault/:accountId', verifyToken, verifyAdmin, setDefaultBankAccount)
 
 export default app

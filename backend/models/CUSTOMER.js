@@ -19,6 +19,24 @@ const customerSchema = new mongoose.Schema({
     required: true,
     min: [0, 'Deposit amount cannot be negative']
   },
+  paid_deposite_amount:{
+    type:Number,
+    default:0,
+    min: [0, 'Paid deposit amount cannot be negative']
+  },
+  deposite_status:{
+    type: String,
+    enum: ['Paid', 'Pending'],
+    default: 'Pending'
+  },
+  in_notice_period:{
+    type:Boolean,
+    default:false
+  },
+  customer_replaced:{
+    type:Boolean,
+    default:false
+  },
   rent_amount:{
     type:Number,
     required:true,

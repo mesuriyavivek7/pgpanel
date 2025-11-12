@@ -88,69 +88,69 @@ function EmployeeForm({selectedEmployee, onClose}) {
 
     
   return (
-    <div className='fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center'>
-        <div className='flex w-xl flex-col gap-4 bg-white rounded-2xl p-4'>
+    <div className='fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center px-4 py-4 sm:px-6 sm:py-6'>
+        <div className='flex w-full max-w-xl flex-col gap-3 sm:gap-4 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 max-h-[90vh] overflow-y-auto'>
             <div className='flex items-center gap-2'>
-              <ChevronLeft size={28} onClick={()=>onClose(false)} className="cursor-pointer"></ChevronLeft>
-              <h1 className="text-2xl font-semibold">{selectedEmployee ? "Edit Employee" : "Add Employee"}</h1>
+              <ChevronLeft size={24} className="sm:w-7 sm:h-7 cursor-pointer flex-shrink-0" onClick={()=>onClose(false)}></ChevronLeft>
+              <h1 className="text-lg sm:text-xl md:text-2xl font-semibold break-words">{selectedEmployee ? "Edit Employee" : "Add Employee"}</h1>
             </div>
-            <form onSubmit={handleSubmit(selectedEmployee ? handleEditEmployee : handleAddEmployee)} className='flex flex-col gap-4'>
-              <div className='flex flex-col gap-2'>
-                <label>Employee Name <span className='text-sm text-red-500'>*</span></label>
+            <form onSubmit={handleSubmit(selectedEmployee ? handleEditEmployee : handleAddEmployee)} className='flex flex-col gap-3 sm:gap-4'>
+              <div className='flex flex-col gap-1.5 sm:gap-2'>
+                <label className='text-sm sm:text-base'>Employee Name <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                     <input
                     type='text'
                     {...register("employee_name")}
-                    className='p-2 border border-neutral-300 rounded-md outline-none'
+                    className='p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                     placeholder='Enter employee name'
                     ></input>
-                    {errors.employee_name && <span className='text-sm text-red-500'>{errors.employee_name.message}</span>}
+                    {errors.employee_name && <span className='text-xs sm:text-sm text-red-500 mt-1'>{errors.employee_name.message}</span>}
                 </div>
               </div>
-              <div className='flex flex-col gap-2'>
-                <label>Mobile No</label>
+              <div className='flex flex-col gap-1.5 sm:gap-2'>
+                <label className='text-sm sm:text-base'>Mobile No</label>
                 <div className='flex flex-col'>
                     <input
                     type='text'
                     {...register("mobile_no")}
-                    className='p-2 border border-neutral-300 rounded-md outline-none'
+                    className='p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                     placeholder='Enter mobile no'
                     ></input>
-                    {errors.mobile_no && <span className='text-sm text-red-500'>{errors.mobile_no.message}</span>}
+                    {errors.mobile_no && <span className='text-xs sm:text-sm text-red-500 mt-1'>{errors.mobile_no.message}</span>}
                 </div>
               </div>
-              <div className='flex flex-col gap-2'>
-                <label>Salary</label>
+              <div className='flex flex-col gap-1.5 sm:gap-2'>
+                <label className='text-sm sm:text-base'>Salary</label>
                 <div className='flex flex-col'>
                     <input
-                    type='text'
+                    type='number'
                     {...register("salary" , {valueAsNumber:true})}
-                    className='p-2 border border-neutral-300 rounded-md outline-none'
+                    className='p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                     placeholder='Enter salary'
                     ></input>
-                    {errors.salary && <span className='text-sm text-red-500'>{errors.salary.message}</span>}
+                    {errors.salary && <span className='text-xs sm:text-sm text-red-500 mt-1'>{errors.salary.message}</span>}
                 </div>
               </div>
-              <div className='flex flex-col gap-2'>
-                <label>Employee Type <span className='text-sm text-red-500'>*</span></label>
+              <div className='flex flex-col gap-1.5 sm:gap-2'>
+                <label className='text-sm sm:text-base'>Employee Type <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                     <select
                     {...register('employee_type')}
-                     className='p-2 border border-neutral-300 rounded-md outline-none'>
+                     className='p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'>
                         <option value={'Cook'}>Cook</option>
                         <option value={'Co-Worker'}>Co-Worker</option>
                     </select>
-                    {errors.employee_type && <span className='text-sm text-red-500'>{errors.employee_type.message}</span>}
+                    {errors.employee_type && <span className='text-xs sm:text-sm text-red-500 mt-1'>{errors.employee_type.message}</span>}
                 </div>
               </div>
-              <div className='flex flex-col gap-2'>
-                <label>Branch <span className='text-sm text-red-500'>*</span></label>
+              <div className='flex flex-col gap-1.5 sm:gap-2'>
+                <label className='text-sm sm:text-base'>Branch <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                   <select 
                   {...register('branch')}
                   value={selectedBranch}
                   onChange={(e)=>setSelectedBranch(e.target.value)}
-                  className='p-2 border border-neutral-300 rounded-md outline-none'>
+                  className='p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'>
                      <option value={''}>--- Select Branch ---</option>
                      {
                         branches.map((item,index) => (
@@ -158,14 +158,14 @@ function EmployeeForm({selectedEmployee, onClose}) {
                         ))
                      }
                   </select>
-                  {errors.branch && <span className='text-sm text-red-500'>{errors.branch.message}</span>}
+                  {errors.branch && <span className='text-xs sm:text-sm text-red-500 mt-1'>{errors.branch.message}</span>}
                 </div>
               </div>
-              <div className="flex justify-center items-center">
-               <button type="submit" disabled={loading} className="p-2 hover:bg-blue-600 disabled:cursor-not-allowed w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium">
+              <div className="flex justify-center items-center pt-2">
+               <button type="submit" disabled={loading} className="p-2.5 sm:p-3 hover:bg-blue-600 disabled:cursor-not-allowed w-full sm:w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium text-sm sm:text-base disabled:opacity-50">
                 {
                   loading ? 
-                  <LoaderCircle className="animate-spin"></LoaderCircle> :
+                  <LoaderCircle className="animate-spin w-5 h-5"></LoaderCircle> :
                   selectedEmployee ? "Save" 
                   : "Submit"
                 }

@@ -52,6 +52,8 @@ export const getAllAcmanager = async (req, res, next) =>{
     try{
         const {searchQuery = '', branch = ''} = req.query 
 
+        console.log(branch)
+
        const mappings = await LOGINMAPPING.find({userType:"Account"})
        .populate({
          path:'mongoid',
@@ -76,7 +78,7 @@ export const getAllAcmanager = async (req, res, next) =>{
            .includes(searchQuery.toLowerCase());
  
          const branchMatch = branch
-           ? item.mongoid?.branch?._id?.toString() === branch
+           ? item.mongoid?.branch?.some(b => b._id.toString() === branch)
            : true;
  
          return nameMatch && branchMatch;

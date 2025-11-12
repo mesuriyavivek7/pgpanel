@@ -19,7 +19,7 @@ import monthlyRoute from './routes/monthly.js'
 import bankaccountRoute from './routes/bankaccount.js'
 import cashoutRoute from './routes/cashout.js'
 import adminRoute from './routes/admin.js'
-import './utils/cron.js';
+import { initCronsJobs } from './utils/cron.js';
 
 // Get the current file's path
 const __filename = fileURLToPath(import.meta.url);
@@ -74,6 +74,9 @@ const connectDb = async () => {
     try {
       await mongoose.connect(process.env.MONGO);
       console.log("Connected to MongoDB successfully");
+      
+      //Initialize cron jobs after DB connection
+      await initCronsJobs();
     } catch (err) {
       throw err;
     }

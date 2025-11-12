@@ -134,7 +134,51 @@ export const updateEmployee = async (req, res, next) => {
         }
 
         if (employee_name) employee.employee_name = employee_name
-        if (salary) employee.salary = salary
+        if (salary) {
+            if (salary < employee.salary) {
+              return res.status(400).json({
+                message: "Salary amount cannot be less than previous salary amount.",
+                success: false,
+              });
+            }
+          
+            // Get current month & year
+            const currentMonth = new Date().getMonth() + 1;
+            const currentYear = new Date().getFullYear();
+          
+            // Find all future salary records for this employee (including current month)
+            const futureSalaries = await EMPLOYEESALARY.find({
+              employee: employee._id,
+              $or: [
+                { year: { $gt: currentYear } },
+                { year: currentYear, month: { $gte: currentMonth } },
+              ],
+            });
+          
+            if (futureSalaries.length > 0) {
+              // Update salary for all current and future records
+              await EMPLOYEESALARY.updateMany(
+                {
+                  employee: employee._id,
+                  $or: [
+                    { year: { $gt: currentYear } },
+                    { year: currentYear, month: { $gte: currentMonth } },
+                  ],
+                },
+                {
+                  $set: {
+                    salary: salary,
+                    status: "Pending",
+                  },
+                },
+                { session }
+              );
+            }
+          
+            // Update employee’s salary
+            employee.salary = salary;
+            await employee.save({ session });
+        }          
         if (branch) employee.branch = branch
         if (mobile_no) employee.mobile_no = mobile_no
         if (employee_type) employee.employee_type = employee_type

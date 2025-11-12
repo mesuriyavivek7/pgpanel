@@ -12,8 +12,11 @@ export const createBankAccount = async (req, res, next) =>{
 
         if(existBankAccount) return res.status(409).json({message:"Account is already exist.",success:false})
 
+        const defaultBankAccount = await BANKACCOUNT.findOne({is_default:true})
+
         const newBankAccount = new BANKACCOUNT({
-            account_holdername
+            account_holdername,
+            is_default : defaultBankAccount ? false : true
         })
 
         await newBankAccount.save()
@@ -29,7 +32,9 @@ export const getAllBankAccount = async (req, res, next) =>{
     try{
         const allAccounts = await BANKACCOUNT.find({status:'active'})
 
-        const transactions = await TRANSACTION.find()
+        const transactions = await TRANSACTION.find({
+            transactionType: { $in: ['expense', 'income'] }
+          })
         .populate('refId')
         .populate('bank_account')
 
@@ -99,7 +104,9 @@ export const updateBankAccount = async (req, res, next) =>{
 
         const bankAccount = await BANKACCOUNT.findOne({_id:accountId, status:'active'}) 
 
-        if(bankAccount){
+        if(!bankAccount) return res.status(404).json({message:"Bank account not found.",success:false})
+
+        if(account_holdername){
 
             if(bankAccount.account_holdername!== account_holdername){
                 const existingBankAccount = await BANKACCOUNT.findOne({account_holdername:bankAccount})
@@ -109,8 +116,13 @@ export const updateBankAccount = async (req, res, next) =>{
 
             bankAccount.account_holdername = account_holdername 
 
-            await bankAccount.save()
         }
+
+        if(is_default !== undefined){
+            bankAccount.is_default = is_default
+        }
+
+        await bankAccount.save()
 
         return res.status(200).json({message:"Bank account name updated successfully.",success:true})
         
@@ -171,6 +183,15 @@ export const deleteBankAccount = async (req, res, next) =>{
         })
 
         if(balance === 0){
+            if(bankAccount.is_default){
+                //Find another account to set default true
+                const anotherAccount = await BANKACCOUNT.findOne({_id:{$ne:bankAccount._id}, status:{$ne:'deleted'}})
+
+                if(anotherAccount){
+                    anotherAccount.is_default = true
+                    await anotherAccount.save()
+                }
+            }
             bankAccount.status = 'deleted'
             await bankAccount.save()
 
@@ -219,6 +240,30 @@ export const resetAllBankAccount = async (req, res, next) =>{
         await newResetBankAccount.save()
 
         return res.status(200).json({message:"All bank account reset successfully.", success: true})
+
+    }catch(err){
+        next(err)
+    }
+}
+
+export const setDefaultBankAccount = async (req, res, next) =>{
+    try{
+        const {accountId} = req.params 
+
+        if(!accountId) return res.status(400).json({message:"Please provide account id.",success:false}) 
+
+        const bankAccount = await BANKACCOUNT.findById(accountId) 
+
+        if(!bankAccount) return res.status(404).json({message:"Bank account not found.",success:false})
+
+        //Unset previous default account
+        await BANKACCOUNT.updateMany({is_default:true}, {$set:{is_default:false}})
+
+        //Set new default account
+        bankAccount.is_default = true
+        await bankAccount.save()
+
+        return res.status(200).json({message:"Bank account set as default successfully.",success:true})
 
     }catch(err){
         next(err)

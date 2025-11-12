@@ -151,58 +151,58 @@ function EmployeeSalaryForm({ employee , onClose }) {
     switch (currentStep) {
       case 0:
         return (
-         <div className="flex h-[580px] justify-between flex-col gap-4">
-           <div className="flex flex-col gap-2">
-            <label>
+         <div className="flex min-h-[400px] sm:min-h-[580px] justify-between flex-col gap-3 sm:gap-4">
+           <div className="flex flex-col gap-1.5 sm:gap-2">
+            <label className="text-sm sm:text-base">
               Select Employee <span className="text-sm text-red-500">*</span>
             </label>
             <div className="flex flex-col">
               <select
                 value={selectedEmployee?.employeeId}
                 onChange={handleSelectEmployee}
-                className="p-2 border border-neutral-300 rounded-md outline-none"
+                className="p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
-                <option value={""}>-- Selecte Employee --</option>
+                <option value={""}>-- Select Employee --</option>
                 {employees.map((item, index) => (
                   <option key={index} value={item.employeeId}>
                     {item.employee_name}
                   </option>
                 ))}
               </select>
-              {employeeError && <span className="text-sm text-red-500">{employeeError}</span>}
+              {employeeError && <span className="text-xs sm:text-sm text-red-500 mt-1">{employeeError}</span>}
             </div>
           </div>
           {
              selectedEmployee && 
-             <div className="p-4 h-full bg-gray-100 rounded-2xl">
-              <div className="grid grid-cols-2 items-center gap-4">
+             <div className="p-3 sm:p-4 bg-gray-100 rounded-xl sm:rounded-2xl">
+              <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-3 sm:gap-4">
               <div className="flex items-center gap-2">
-                <User></User>
-                <span className="font-medium">{capitalise(selectedEmployee?.employee_name)}</span>
+                <User className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"></User>
+                <span className="text-sm sm:text-base font-medium break-words">{capitalise(selectedEmployee?.employee_name)}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Phone></Phone>
-                <span className="font-medium">{selectedEmployee?.mobile_no}</span>
+                <Phone className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"></Phone>
+                <span className="text-sm sm:text-base font-medium">{selectedEmployee?.mobile_no}</span>
               </div>
               <div className="flex items-center gap-2">
-                <WalletMinimal></WalletMinimal>
-                <span className="font-medium">₹{selectedEmployee?.salary}</span>
+                <WalletMinimal className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"></WalletMinimal>
+                <span className="text-sm sm:text-base font-medium">₹{selectedEmployee?.salary}</span>
               </div>
               <div className="flex items-start gap-2">
-                <House></House>
+                <House className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 mt-0.5"></House>
                 <Tooltip title={selectedEmployee?.branch}>
-                  <span className="font-medium">{sliceString(selectedEmployee?.branch, 20)}</span>
+                  <span className="text-sm sm:text-base font-medium break-words">{sliceString(selectedEmployee?.branch, 20)}</span>
                 </Tooltip>
               </div>
               <div className="flex items-start gap-2">
-                <GraduationCap></GraduationCap>
-                <span className="font-medium">{selectedEmployee?.employee_type}</span>
+                <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 mt-0.5"></GraduationCap>
+                <span className="text-sm sm:text-base font-medium">{selectedEmployee?.employee_type}</span>
               </div>
               </div> 
              </div>
           }
-          <div className="flex justify-center items-center">
-              <button onClick={handleNext} className="p-2 hover:bg-blue-600 w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium">
+          <div className="flex justify-center items-center pt-2">
+              <button onClick={handleNext} className="p-2.5 sm:p-3 hover:bg-blue-600 w-full sm:w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium text-sm sm:text-base">
                   Next
               </button>
           </div>
@@ -210,35 +210,35 @@ function EmployeeSalaryForm({ employee , onClose }) {
         );
       case 1:
         return (
-          <div className="flex h-[580px] flex-col gap-2">
-            <div className="grid mb-4 grid-cols-2 items-center gap-4">
+          <div className="flex min-h-[400px] sm:min-h-[580px] flex-col gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-3 sm:gap-4">
               <div className="flex items-center gap-2">
-                <User></User>
-                <span className="text-lg font-medium">{capitalise(selectedEmployee?.employee_name)}</span>
+                <User className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"></User>
+                <span className="text-sm sm:text-base md:text-lg font-medium break-words">{capitalise(selectedEmployee?.employee_name)}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Phone></Phone>
-                <span className="text-lg font-medium">{selectedEmployee?.mobile_no}</span>
+                <Phone className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"></Phone>
+                <span className="text-sm sm:text-base md:text-lg font-medium">{selectedEmployee?.mobile_no}</span>
               </div>
               <div className="flex items-center gap-2">
-                <WalletMinimal></WalletMinimal>
-                <span className="text-lg font-medium">₹{selectedEmployee?.salary}</span>
+                <WalletMinimal className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"></WalletMinimal>
+                <span className="text-sm sm:text-base md:text-lg font-medium">₹{selectedEmployee?.salary}</span>
               </div>
               <div className="flex items-start gap-2">
-                <House></House>
+                <House className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 mt-0.5"></House>
                 <Tooltip title={selectedEmployee?.branch}>
-                  <span className="text-lg font-medium">{sliceString(selectedEmployee?.branch, 20)}</span>
+                  <span className="text-sm sm:text-base md:text-lg font-medium break-words">{sliceString(selectedEmployee?.branch, 20)}</span>
                 </Tooltip>
               </div>
             </div>
 
-            <form onSubmit={handleSubmit(handleSalaryPay)} className="flex flex-col gap-4">
-              <div className="flex flex-col gap-1">
-                <label>Pending Amount</label>
-                <span>₹{selectedSalary?.pending || 0}</span>
+            <form onSubmit={handleSubmit(handleSalaryPay)} className="flex flex-col gap-3 sm:gap-4">
+              <div className="flex flex-col gap-1.5 sm:gap-2">
+                <label className="text-sm sm:text-base font-medium">Pending Amount</label>
+                <span className="text-sm sm:text-base md:text-lg font-medium">₹{selectedSalary?.pending || 0}</span>
               </div>
-              <div className="flex flex-col gap-2">
-                <label>
+              <div className="flex flex-col gap-1.5 sm:gap-2">
+                <label className="text-sm sm:text-base">
                   Amount <span className="text-sm text-red-500">*</span>
                 </label>
                 <div className="flex flex-col">
@@ -246,17 +246,17 @@ function EmployeeSalaryForm({ employee , onClose }) {
                     {...register("amount", { valueAsNumber: true })}
                     type="number"
                     placeholder="Enter amount"
-                    className="p-2 border border-neutral-300 rounded-md outline-none"
+                    className="p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   ></input>
                   {errors.amount && (
-                    <span className="text-sm text-red-500">
+                    <span className="text-xs sm:text-sm text-red-500 mt-1">
                       {errors.amount.message}
                     </span>
                   )}
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <label>
+              <div className="flex flex-col gap-1.5 sm:gap-2">
+                <label className="text-sm sm:text-base">
                   Select Month/Year{" "}
                   <span className="text-sm text-red-500">*</span>
                 </label>
@@ -264,7 +264,7 @@ function EmployeeSalaryForm({ employee , onClose }) {
                   <select
                     {...register("date")}
                     onChange={handleSelectSalary}
-                    className="p-2 border border-neutral-300 rounded-md outline-none"
+                    className="p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     {
                       selectedEmployee?.pending_salary.map((item,index)=>(
@@ -273,18 +273,18 @@ function EmployeeSalaryForm({ employee , onClose }) {
                    }
                   </select>
                   {errors.date && (
-                    <span className="text-sm text-red-500">
+                    <span className="text-xs sm:text-sm text-red-500 mt-1">
                       {errors.date.message}
                     </span>
                   )}
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <label>Select Payment Mode</label>
+              <div className="flex flex-col gap-1.5 sm:gap-2">
+                <label className="text-sm sm:text-base">Select Payment Mode <span className="text-sm text-red-500">*</span></label>
                 <div className="flex flex-col">
                   <select
                     {...register("payment_mode")}
-                    className="p-2 border border-neutral-300 rounded-md outline-none"
+                    className="p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value={""}>-- Select Payment Mode --</option>
                     <option value={"cash"}>Cash</option>
@@ -292,18 +292,18 @@ function EmployeeSalaryForm({ employee , onClose }) {
                     <option value={"bank_transfer"}>Bank Transfer</option>
                   </select>
                   {errors.payment_mode && (
-                    <span className="text-sm text-red-500">
+                    <span className="text-xs sm:text-sm text-red-500 mt-1">
                       {errors.payment_mode.message}
                     </span>
                   )}
                 </div>
               </div>
-              <div className='flex flex-col gap-1'>
-                <label>Select Bank Account <span className='text-red-500 text-sm'>*</span></label>
+              <div className='flex flex-col gap-1.5 sm:gap-2'>
+                <label className="text-sm sm:text-base">Select Bank Account <span className='text-red-500 text-sm'>*</span></label>
                 <div className='flex flex-col'>
                    <select 
                    {...register('bank_account')}
-                   className='p-2 border border-neutral-300 rounded-md outline-none'>
+                   className='p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'>
                      <option value={''}>-- Select Bank Account --</option>
                      {
                        bankAccounts.map((item, index) => (
@@ -311,22 +311,23 @@ function EmployeeSalaryForm({ employee , onClose }) {
                        ))
                      }
                    </select>
+                   {errors.bank_account && <span className='text-xs sm:text-sm text-red-500 mt-1'>{errors.bank_account.message}</span>}
                 </div>
               </div>
-              <div className="flex justify-center gap-2 items-center">
+              <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3 items-center pt-2">
                 {
                   !employee && 
-                  <button onClick={handlePrev} className="p-2 bg-orange-400 hover:bg-orange-500 w-36 transition-all duration-300 cursor-pointer flex justify-center items-center rounded-md text-white font-medium"> 
+                  <button onClick={handlePrev} className="p-2.5 sm:p-3 bg-orange-400 hover:bg-orange-500 w-full sm:w-36 transition-all duration-300 cursor-pointer flex justify-center items-center rounded-md text-white font-medium text-sm sm:text-base"> 
                     Back
                   </button>
                 }
                 <button
                   type="submit"
                   disabled={loading}
-                  className="p-2 hover:bg-blue-600 w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium"
+                  className="p-2.5 sm:p-3 hover:bg-blue-600 w-full sm:w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? (
-                    <LoaderCircle className="animate-spin"></LoaderCircle>
+                    <LoaderCircle className="animate-spin w-5 h-5"></LoaderCircle>
                   ) : (
                     "Pay"
                   )}
@@ -339,15 +340,15 @@ function EmployeeSalaryForm({ employee , onClose }) {
   };
 
   return (
-    <div className="fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center">
-      <div className="flex w-xl flex-col gap-4 bg-white rounded-2xl p-4">
-        <div className="flex items-center gap-2 mb-2">
+    <div className="fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center px-4 py-4 sm:px-6 sm:py-6">
+      <div className="flex w-full max-w-2xl flex-col gap-3 sm:gap-4 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center gap-2">
           <ChevronLeft
-            size={28}
+            size={24}
+            className="sm:w-7 sm:h-7 cursor-pointer flex-shrink-0"
             onClick={() => onClose(false)}
-            className="cursor-pointer"
           ></ChevronLeft>
-          <h1 className="text-2xl font-semibold">Pay Salary</h1>
+          <h1 className="text-lg sm:text-xl md:text-2xl font-semibold break-words">Pay Salary</h1>
         </div>
         {renderForm()}
       </div>

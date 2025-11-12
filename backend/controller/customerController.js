@@ -5,11 +5,32 @@ import TRANSACTION from "../models/TRANSACTION.js";
 import ACCOUNT from "../models/ACCOUNT.js";
 import DEPOSITEAMOUNT from "../models/DEPOSITEAMOUNT.js";
 import CUSTOMERRENT from "../models/CUSTOMERRENT.js";
+import mongoose from "mongoose";
 
 export const createCustomer = async (req, res, next) => {
     try {
         const { mongoid, userType } = req
-        const { customer_name, mobile_no, deposite_amount, rent_amount, room, branch, joining_date, bank_account, payment_mode } = req.body
+        const { customer_name, mobile_no, deposite_amount, variable_deposite_amount, rent_amount, room, branch, joining_date, bank_account, payment_mode, isAdvance, replaceCustomer } = req.body
+
+        if(isAdvance && isAdvance === true){
+            if(!replaceCustomer){
+                return res.status(400).json({message:"Please provide replace customer for advance rent customer.",success:false})
+            }
+    
+            const existingCustomer = await CUSTOMER.findById(replaceCustomer)
+    
+            if(!existingCustomer){
+                return res.status(404).json({message:"Replace customer not found.",success:false})
+            }
+    
+            if(!existingCustomer.in_notice_period){
+                return res.status(400).json({message:"Replace customer is not in notice period.",success:false})
+            }
+        }
+
+        if(variable_deposite_amount > deposite_amount){
+            return res.status(400).json({message:"Variable deposite amount cannot be greater than deposite amount.",success:false})
+        }
 
         if(userType === "Account"){
             const account = await ACCOUNT.findById(mongoid)
@@ -31,13 +52,19 @@ export const createCustomer = async (req, res, next) => {
 
         if (!existBranch) return res.status(404).json({ message: "Branch is not found", success: false })
 
-        if (existRoom.filled >= existRoom.capacity) return res.status(400).json({ message: "Room is already full. Cannot add more customers.", success: false })
+        if(!isAdvance){
+          if (existRoom.filled >= existRoom.capacity) return res.status(400).json({ message: "Room is already full. Cannot add more customers.", success: false })
+        }
 
+        let isDepositePaid = deposite_amount === variable_deposite_amount ? 'Paid' : 'Pending'
+        
         //Create new customer
         const newCustomer = await CUSTOMER({
             customer_name,
             mobile_no,
             deposite_amount,
+            paid_deposite_amount: variable_deposite_amount,
+            deposite_status: isDepositePaid,
             rent_amount,
             room,
             joining_date,
@@ -46,41 +73,64 @@ export const createCustomer = async (req, res, next) => {
             added_by_type: userType
         })
 
-        //Create new deposite
-        const deposite = new DEPOSITEAMOUNT({   
+        if(variable_deposite_amount > 0){
+
+          //Create new deposite
+          const deposite = new DEPOSITEAMOUNT({   
             customer: newCustomer._id, 
-            amount: deposite_amount 
-        })
+            amount: variable_deposite_amount 
+          })
 
-        await deposite.save()
+          await deposite.save()
 
-        //Create transaction for deposite amount
-        const newTransaction = new TRANSACTION({
-            transactionType: 'income',
+          //Create transaction for deposite amount
+          const newTransaction = new TRANSACTION({
+            transactionType: 'deposite',
             type: 'deposite',
             refModel: 'Depositeamount',
             refId: deposite._id,
             bank_account,
             branch,
             payment_mode,
-        })
+          })
 
-        //Create customer rent for current month with paid amount = 0
-        const newCustomerRent = new CUSTOMERRENT({
-            customer: newCustomer._id,
-            rent: rent_amount,
-            paid_amount: 0,
-            status:'Pending',
-            month: new Date().getMonth() + 1,
-            year: new Date().getFullYear()
-        })
+          await newTransaction.save()
 
+        }
 
-        existRoom.filled = existRoom.filled + 1
+        let newCustomerRent = null
+        if(isAdvance && isAdvance === true){
+          newCustomerRent = new CUSTOMERRENT({
+              customer: newCustomer._id,
+              rent: rent_amount,
+              paid_amount: 0,
+              status:'Pending',
+              month: new Date(joining_date).getMonth() + 1,
+              year: new Date(joining_date).getFullYear()
+          })
+        }else{
+           newCustomerRent = new CUSTOMERRENT({
+              customer: newCustomer._id,
+              rent: rent_amount,
+              paid_amount: 0,
+              status:'Pending',
+              month: new Date().getMonth() + 1,
+              year: new Date().getFullYear()
+           })
+        }
 
+        if(!isAdvance) {
+          existRoom.filled = existRoom.filled + 1
+        }
+        
+        if(isAdvance && isAdvance === true){
+            const replaceCust = await CUSTOMER.findById(replaceCustomer)
+            replaceCust.customer_replaced = true
+            await replaceCust.save()
+        }
+        
         await existRoom.save()
         await newCustomer.save()
-        await newTransaction.save()
         await newCustomerRent.save()
 
         return res.status(200).json({ message: "New customer created successfully.", success: true, data: newCustomer })
@@ -229,72 +279,207 @@ export const getCustomerByBranchId = async (req, res, next) => {
 }
 
 export const updateCustomerDetails = async (req, res, next) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
     try {
         const { customerId } = req.params
         const {mongoid, userType} = req 
 
         const { customer_name, mobile_no, deposite_amount, room, branch, rent_amount, joining_date } = req.body
 
-        if (!customerId) return res.status(400).json({ message: "Please provide customer id.", success: false })
+        if (!customerId){
+           await session.abortTransaction();
+           session.endSession();
+           return res.status(400).json({ message: "Please provide customer id.", success: false })
+        }
 
-        const customer = await CUSTOMER.findById(customerId)
+        const customer = await CUSTOMER.findById(customerId).session(session)
 
-        if (!customer) return res.status(404).json({ message: "Customer not found.", success: false })
+        if (!customer){
+            await session.abortTransaction();
+            session.endSession();
+           return res.status(404).json({ message: "Customer not found.", success: false })
+        }
 
         if(userType === "Account"){
-            const account = await ACCOUNT.findById(mongoid) 
+            const account = await ACCOUNT.findById(mongoid).session(session) 
 
-            if(!account) return res.status(404).json({message:"Account manager not found.",success:false})
+            if(!account){
+                await session.abortTransaction();
+                session.endSession();
+                return res.status(404).json({message:"Account manager not found.",success:false})
+            }
 
-            if(!account.branch.includes(customer.branch)) return res.status(403).json({message:"You have not access to update this customer details.",success:false})
+            if(!account.branch.includes(customer.branch)){
+                await session.abortTransaction();
+                session.endSession();
+                return res.status(403).json({message:"You have not access to update this customer details.",success:false})
+            }
         }
 
         if (mobile_no && mobile_no !== customer.mobile_no) {
-            const existCustomer = await CUSTOMER.findOne({ mobile_no })
+            const existCustomer = await CUSTOMER.findOne({ mobile_no }).session(session)
 
-            if (existCustomer) return res.status(409).json({ message: "Customer is already exist with same mobileno.", success: false })
+            if (existCustomer){
+                 await session.abortTransaction();
+                 session.endSession();
+                 return res.status(409).json({ message: "Customer is already exist with same mobileno.", success: false })
+            }
 
             customer.mobile_no = mobile_no
         }
 
         if (customer_name) customer.customer_name = customer_name
-        if (deposite_amount){
+        if (deposite_amount && deposite_amount !== customer.deposite_amount){
+            if(deposite_amount < customer.deposite_amount){
 
-            const customerDeposite = await DEPOSITEAMOUNT.findOne({customer: customerId})
-
-            if(!customerDeposite) {
-
-                const newDeposite = new DEPOSITEAMOUNT({
-                    customer: customerId,
-                    amount: deposite_amount
+                const defaultBankAccount = await BANKACCOUNT.findOne({is_default:true}).session(session)
+      
+                const newDepositeAmount = await DEPOSITEAMOUNT({
+                  customer: customer._id,
+                  amount: customer.deposite_amount - deposite_amount,
                 })
+                
+                const newTransaction = await TRANSACTION({
+                  transactionType: "withdrawal",
+                  type: "deposite",
+                  refModel: "Depositeamount",
+                  refId: newDepositeAmount._id,
+                  payment_mode: "cash",
+                  status: "completed",
+                  branch: customer.branch,
+                  bank_account: defaultBankAccount ? defaultBankAccount._id : null,
+                  pgcode,
+                  added_by: mongoid,
+                  added_by_type: userType,
+                })
+      
+                await newDepositeAmount.save({session});
+                await newTransaction.save({session});
+      
+             }else{
+                customer.deposite_status = 'Pending'
+             }
+             customer.deposite_amount = deposite_amount;
+        }
 
-                await newDeposite.save()
-            }else{
-                customerDeposite.amount = deposite_amount
-                await customerDeposite.save()
+        if (rent_amount) {
+            if (rent_amount < customer.rent_amount) {
+              await session.abortTransaction();
+              session.endSession();
+              return res.status(400).json({
+                message: "Rent amount cannot be less than previous rent amount.",
+                success: false,
+              });
+            }
+          
+            customer.rent_amount = rent_amount;
+          
+            // Get current month & year
+            const currentMonth = new Date().getMonth() + 1;
+            const currentYear = new Date().getFullYear();
+          
+            // Find all future rent records for this customer (including current month)
+            const futureRents = await CUSTOMERRENT.find({
+              customer: customer._id,
+              $or: [
+                { year: { $gt: currentYear } },
+                { year: currentYear, month: { $gte: currentMonth } },
+              ],
+            });
+          
+            if (futureRents.length > 0) {
+              // Update rent for all matching documents
+              await CUSTOMERRENT.updateMany(
+                {
+                  customer: customer._id,
+                  $or: [
+                    { year: { $gt: currentYear } },
+                    { year: currentYear, month: { $gte: currentMonth } },
+                  ],
+                },
+                {
+                  $set: {
+                    rent: rent_amount,
+                    status: "Pending",
+                  },
+                },
+                { session }
+              );
+            }
+          
+            // Save updated rent in customer record
+            await customer.save({ session });
+        }
+          
+
+        if (room && room.toString() !== customer.room.toString()){
+            const oldRoomId = customer.room;
+            const newRoomId = room;
+      
+            const oldRoom = oldRoomId
+              ? await ROOM.findById(oldRoomId).session(session)
+              : null;
+            const newRoom = await ROOM.findById(newRoomId).session(session);
+      
+            if (!newRoom) {
+              await session.abortTransaction();
+              session.endSession();
+              return res
+                .status(400)
+                .json({ message: "Selected room is not found.", success: false });
+            }
+            
+            if (newRoom.filled >= newRoom.capacity) {
+                await session.abortTransaction();
+                session.endSession();
+                return res
+                  .status(400)
+                  .json({ message: "New room is already full.", success: false });
             }
 
-            customer.deposite_amount = deposite_amount
-        }
-        if(rent_amount) {
+            if (oldRoom) {
+                await ROOM.findByIdAndUpdate(
+                  oldRoom._id,
+                  { $inc: { filled: -1 } },
+                  { session }
+                );
+            }
 
-            //HERE ADD LOGIC TO UPDATE CUSTOMER RENT IF MONTHLY RENT IS CHANGE
-            // const month = new Date().getMonth() + 1
-            // const year = new Date().getFullYear()
-            // const customerRent = await CUSTOMERRENT.findOne({customer: customerId, month, year})
-
-            customer.rent_amount = rent_amount
+            await ROOM.findByIdAndUpdate(
+                newRoom._id,
+                { $inc: { filled: 1 } },
+                { session }
+            );
+        
+            customer.room = room
         }
-        if (room) customer.room = room
-        if (branch) customer.branch = branch
+
+        if (branch){
+            const existBranch = await BRANCH.findById(branch).session(session);
+            if (!existBranch) {
+            await session.abortTransaction();
+            session.endSession();
+            return res
+             .status(400)
+             .json({ message: "Selected branch is not found.", success: false });
+            }
+            customer.branch = branch;
+        }
+
         if (joining_date) customer.joining_date = joining_date
 
-        await customer.save()
+        await customer.save({session})
+
+        await session.commitTransaction();
+        session.endSession();
 
         return res.status(200).json({ message: "Customer details updated successfully.", success: true })
 
     } catch (err) {
+        await session.abortTransaction();
+        session.endSession();
         next(err)
     }
 }
@@ -322,14 +507,29 @@ export const changeStatus = async (req, res, next) => {
         }
 
         const room = await ROOM.findById(customer.room)
-
+    
         if (!room) return res.status(200).json({ message: "Customer room is missing.", success: false })
 
-        room.filled = room.filled - 1
+        if(status){
+           if(!customer.customer_replaced){
+            if(room.filled >= room.capacity){
+                return res.status(400).json({ message: "Room is already full. Cannot activate customer.", success: false })
+            }
+
+            room.filled = room.filled + 1
+
+            await room.save()
+           }
+        }else{
+            if(!customer.customer_replaced){
+                room.filled = room.filled - 1
+        
+                await room.save()
+            }
+        }
 
         customer.status = status
 
-        await room.save()
         await customer.save()
 
         return res.status(200).json({ message: "Customer status changed successfully", success: true })
@@ -339,8 +539,6 @@ export const changeStatus = async (req, res, next) => {
         next(err)
     }
 }
-
-
 
 // export const getPendingCustomerRentList = async (req, res, next) => {
 //     try {

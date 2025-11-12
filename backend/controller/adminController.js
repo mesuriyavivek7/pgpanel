@@ -41,10 +41,29 @@ export const getDashboardSummery = async (req, res, next) => {
       status: "Pending",
     }).countDocuments();
 
-    const transactions = await TRANSACTION.find()
-      .populate("refId")
+    const transactions = await TRANSACTION.find({
+      transactionType: { $in: ['expense', 'income'] }
+    }).populate("refId")
       .populate("bank_account")
       .populate("branch");
+
+    const depositeTransactions = await TRANSACTION.find({
+      transactionType: {$in: ['deposite', 'withdrawal']}
+    }).populate("refId")
+      .populate("bank_account")
+      .populate("branch");
+
+    let totalDepositeAmount = 0  
+
+    depositeTransactions.forEach((tx)=>{
+
+      if(tx.transactionType === 'deposite'){
+        totalDepositeAmount += tx.refId.amount;
+      }else{
+        totalDepositeAmount -= tx.refId.amount;
+      }
+
+    })
 
     let monthlyData = Array.from({ length: 12 }, (_, i) => ({
       month: getMonthShortNames(i + 1),
@@ -137,7 +156,7 @@ export const getDashboardSummery = async (req, res, next) => {
     const branchWiseData = Object.values(branchMap);
 
     // --- BANK ACCOUNTS ---
-    const accounts = await BANKACCOUNT.find();
+    const accounts = await BANKACCOUNT.find({status:'active'});
     const accountsData = accounts.map((acc) => {
       const accTx = transactions.filter(
         (t) => t.bank_account && t.bank_account._id.toString() === acc._id.toString()
@@ -178,7 +197,8 @@ export const getDashboardSummery = async (req, res, next) => {
         totalAcManagers,
         vacantSeats: vacantSeats.length > 0 ? vacantSeats[0].totalVacant : 0,
         pendingRents,
-        branchWiseData, // 👈 branch-wise array
+        branchWiseData, 
+        totalDepositeAmount
       },
       message: "Dashboard summary retrieved successfully.",
       success: true,

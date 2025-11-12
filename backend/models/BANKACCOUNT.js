@@ -10,7 +10,11 @@ const bankAccountSchema = new mongoose.Schema({
         type:String,
         enum:['active','deleted'],
         default:'active'
-    }
+    },
+    is_default:{
+        type:Boolean,
+        default:false
+    },
 },{timestamps:true})
 
 export default mongoose.model('Bankaccount',bankAccountSchema)

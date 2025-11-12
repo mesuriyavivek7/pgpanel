@@ -91,15 +91,15 @@ function AccountForm({ selectedAccount, onClose }) {
   };
 
   return (
-    <div className="fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center">
-      <div className="flex w-xl flex-col gap-4 bg-white rounded-2xl p-4">
+    <div className="fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center px-4 py-4 sm:px-6 sm:py-6">
+      <div className="flex w-full max-w-xl flex-col gap-3 sm:gap-4 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center gap-2">
           <ChevronLeft
-            size={28}
+            size={24}
+            className="sm:w-7 sm:h-7 cursor-pointer flex-shrink-0"
             onClick={() => onClose(false)}
-            className="cursor-pointer"
           ></ChevronLeft>
-          <h1 className="text-2xl font-semibold">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-semibold break-words">
             {selectedAccount ? "Edit Acmanager" : "Add Acmanager"}
           </h1>
         </div>
@@ -107,64 +107,64 @@ function AccountForm({ selectedAccount, onClose }) {
           onSubmit={handleSubmit(
             selectedAccount ? handleEditAcmanager : handleAddAcmanager
           )}
-          className="flex flex-col gap-4"
+          className="flex flex-col gap-3 sm:gap-4"
         >
-          <div className="flex flex-col gap-2">
-            <label>
+          <div className="flex flex-col gap-1.5 sm:gap-2">
+            <label className="text-sm sm:text-base">
               Full Name <span className="text-sm text-red-500">*</span>
             </label>
             <div className="flex flex-col">
               <input
                 type="text"
                 {...register("full_name")}
-                className="p-2 border border-neutral-300 rounded-md outline-none"
+                className="p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter full name"
               ></input>
               {errors.full_name && (
-                <span className="text-sm text-red-500">
+                <span className="text-xs sm:text-sm text-red-500 mt-1">
                   {errors.full_name.message}
                 </span>
               )}
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <label>
+          <div className="flex flex-col gap-1.5 sm:gap-2">
+            <label className="text-sm sm:text-base">
               Mobile No <span className="text-sm text-red-500">*</span>
             </label>
             <div className="flex flex-col">
               <input
                 type="text"
                 {...register("contact_no")}
-                className="p-2 border border-neutral-300 rounded-md outline-none"
+                className="p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter mobile no"
               ></input>
               {errors.contact_no && (
-                <span className="text-sm text-red-500">
+                <span className="text-xs sm:text-sm text-red-500 mt-1">
                   {errors.contact_no.message}
                 </span>
               )}
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <label>
+          <div className="flex flex-col gap-1.5 sm:gap-2">
+            <label className="text-sm sm:text-base">
               Email <span className="text-sm text-red-500">*</span>
             </label>
             <div className="flex flex-col">
               <input
-                type="text"
+                type="email"
                 {...register("email")}
-                className="p-2 border border-neutral-300 rounded-md outline-none"
+                className="p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter email address"
               ></input>
               {errors.email && (
-                <span className="text-sm text-red-500">
+                <span className="text-xs sm:text-sm text-red-500 mt-1">
                   {errors.email.message}
                 </span>
               )}
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <label>
+          <div className="flex flex-col gap-1.5 sm:gap-2">
+            <label className="text-sm sm:text-base">
               Branch <span className="text-sm text-red-500">*</span>
             </label>
             <div className="flex flex-col">
@@ -181,40 +181,40 @@ function AccountForm({ selectedAccount, onClose }) {
                 )}
               />
               {errors.branch && (
-                <span className="text-sm text-red-500">
+                <span className="text-xs sm:text-sm text-red-500 mt-1">
                   {errors.branch.message}
                 </span>
               )}
             </div>
           </div>
           {!selectedAccount && (
-            <div className="flex flex-col gap-2">
-              <label>
+            <div className="flex flex-col gap-1.5 sm:gap-2">
+              <label className="text-sm sm:text-base">
                 Password <span className="text-sm text-red-500">*</span>
               </label>
               <div className="flex flex-col">
                 <input
-                  type="text"
+                  type="password"
                   {...register("password")}
-                  className="p-2 border border-neutral-300 rounded-md outline-none"
+                  className="p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter password"
                 ></input>
                 {errors.password && (
-                  <span className="text-sm text-red-500">
+                  <span className="text-xs sm:text-sm text-red-500 mt-1">
                     {errors.password.message}
                   </span>
                 )}
               </div>
             </div>
           )}
-          <div className="flex justify-center items-center">
+          <div className="flex justify-center items-center pt-2">
             <button
               type="submit"
               disabled={loading}
-              className="p-2 hover:bg-blue-600 disabled:cursor-not-allowed w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium"
+              className="p-2.5 sm:p-3 hover:bg-blue-600 disabled:cursor-not-allowed w-full sm:w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium text-sm sm:text-base disabled:opacity-50"
             >
               {loading ? (
-                <LoaderCircle className="animate-spin"></LoaderCircle>
+                <LoaderCircle className="animate-spin w-5 h-5"></LoaderCircle>
               ) : selectedAccount ? (
                 "Save"
               ) : (

@@ -24,10 +24,30 @@ function CustomerRentForm({selectedCustomer, onClose}) {
   const navigate = useNavigate()
   const [selectedRent,setSelectedRent] = useState(selectedCustomer?.pending_rent[0] || null)
   const [bankAccounts,setBankAccounts] = useState([])
+  const [isDeposite,setIsDeposite] = useState(false)
+  const [isSettled,setIsSettled] = useState(false)
 
   useEffect(()=>{
     if(!selectedCustomer) navigate('/')
   })
+
+  const handleMarkAsDeposite = () =>{
+    if(isDeposite){
+      setIsDeposite(false)
+    }else{
+      setIsDeposite(true)
+      setIsSettled(false)
+    }
+ }
+
+ const handleMarkAsSettled = () =>{
+    if(isSettled){
+      setIsSettled(false)
+    }else{
+      setIsSettled(true)
+      setIsDeposite(false)
+    }
+ }
 
   const {
     register,
@@ -41,6 +61,7 @@ function CustomerRentForm({selectedCustomer, onClose}) {
         customer: selectedCustomer.customerId,
         amount:0,
         isDeposite:false,
+        isSettled: false,
         date:`${selectedCustomer?.pending_rent[0]?.month}-${selectedCustomer?.pending_rent[0]?.year}`,
         payment_mode:'',
         bank_account:''
@@ -87,80 +108,97 @@ function CustomerRentForm({selectedCustomer, onClose}) {
       setSelectedRent(rent)
   }
 
-  const isDeposite = watch("isDeposite")
 
 
   return (
-    <div className='fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center'>
-        <div className='flex w-xl flex-col gap-4 bg-white rounded-2xl p-4'>
-          <div className="flex items-center gap-2 mb-2">
-            <ChevronLeft size={28} onClick={()=>onClose(false)} className="cursor-pointer"></ChevronLeft>
-            <h1 className="text-2xl font-semibold">Pay Rent</h1>
+    <div className='fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center px-4 py-4 sm:px-6 sm:py-6'>
+        <div className='flex w-full max-w-2xl flex-col gap-3 sm:gap-4 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 max-h-[90vh] overflow-y-auto'>
+          <div className="flex items-center gap-2">
+            <ChevronLeft size={24} className="sm:w-7 sm:h-7 cursor-pointer flex-shrink-0" onClick={()=>onClose(false)}></ChevronLeft>
+            <h1 className="text-lg sm:text-xl md:text-2xl font-semibold break-words">Collect Rent</h1>
            </div>
-           <div className='grid mb-2 grid-cols-2 items-center gap-4'>
+           <div className='grid grid-cols-1 sm:grid-cols-2 items-center gap-3 sm:gap-4'>
               <div className='flex items-center gap-2'>
-                 <User></User>
-                 <span className='text-lg font-medium'>{capitalise(selectedCustomer?.customer_name)}</span>
+                 <User className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"></User>
+                 <span className='text-sm sm:text-base md:text-lg font-medium break-words'>{capitalise(selectedCustomer?.customer_name)}</span>
               </div>
               <div className='flex items-center gap-2'>
-                 <Phone></Phone>
-                 <span className='text-lg font-medium'>{selectedCustomer?.mobile_no}</span>
+                 <Phone className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"></Phone>
+                 <span className='text-sm sm:text-base md:text-lg font-medium'>{selectedCustomer?.mobile_no}</span>
               </div>
               <div className='flex items-start gap-2'>
-                 <House></House>
+                 <House className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 mt-0.5"></House>
                  <Tooltip title={selectedCustomer?.branch?.branch_name}>
-                  <span className='text-lg font-medium'>{sliceString(selectedCustomer?.branch?.branch_name,20)}</span>
+                  <span className='text-sm sm:text-base md:text-lg font-medium break-words'>{sliceString(selectedCustomer?.branch?.branch_name,20)}</span>
                  </Tooltip>
               </div>
               <div className='flex items-center gap-2'>
-                 <BedSingle></BedSingle>
-                 <span className='text-lg font-medium'>{capitalise(selectedCustomer?.room?.room_id)}</span>
+                 <BedSingle className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"></BedSingle>
+                 <span className='text-sm sm:text-base md:text-lg font-medium'>{capitalise(selectedCustomer?.room?.room_id)}</span>
               </div>
               <div className='flex items-center gap-2'>
-                <Coins></Coins>
-                <span className='text-lg font-medium'>₹{selectedCustomer?.rent_amount}</span>
+                <Coins className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0"></Coins>
+                <span className='text-sm sm:text-base md:text-lg font-medium'>₹{selectedCustomer?.rent_amount}</span>
+              </div>
+              <div className='flex flex-col gap-1'> 
+                  <label className='text-sm sm:text-base font-medium'>Pending Amount</label>
+                  <span className='text-sm sm:text-base md:text-lg font-medium'>₹{selectedRent?.pending}</span>
               </div>
            </div>
-           <form onSubmit={handleSubmit(handlePay)} className='flex flex-col gap-4'>
-              <div className='grid grid-cols-2 items-start gap-2'>
-                <div className='flex flex-col gap-2'>
-                 <label>Is Deposite Month? <span className='text-sm text-red-500'>*</span></label>
-                 <div className='flex items-center gap-2'>
+           <form onSubmit={handleSubmit(handlePay)} className='flex flex-col gap-3 sm:gap-4'>
+              <div className='grid grid-cols-1 sm:grid-cols-2 items-start gap-3 sm:gap-4'>
+                <div className='flex flex-col gap-1.5 sm:gap-2'>
+                 <label htmlFor='deposite' className='text-sm sm:text-base'>Is Deposite Month? <span className='text-sm text-red-500'>*</span></label>
+                 <div className='flex items-start gap-2'>
                   <input 
+                  id='deposite'
+                  checked={isDeposite}
                   type='checkbox'
                   {...register("isDeposite")}
-                  className="w-4 h-4 cursor-pointer"
+                  onChange={handleMarkAsDeposite}
+                  className="w-4 h-4 sm:w-5 sm:h-5 cursor-pointer mt-0.5 flex-shrink-0"
                   ></input>
-                  <span className='text-sm text-gray-500'>(If checked, rent will be adjusted from deposite amount.)</span>
+                  <span className='text-xs sm:text-sm text-gray-500 leading-relaxed'>(If checked, rent will be adjusted from deposite amount.)</span>
                  </div>
                 </div>
-                <div className='flex flex-col gap-1'> 
-                  <label>Pending Amount</label>
-                  <span>₹{selectedRent?.pending}</span>
+                <div className='flex flex-col gap-1.5 sm:gap-2'>
+                  <label htmlFor='settled' className='text-sm sm:text-base'>Is Settled Rent? <span className='text-sm text-red-500'>*</span></label>
+                  <div className='flex items-start gap-2'>
+                    <input 
+                    id='settled'
+                    checked={isSettled}
+                    type='checkbox'
+                    {...register("isSettled")}
+                    onChange={handleMarkAsSettled} 
+                    className='w-4 h-4 sm:w-5 sm:h-5 cursor-pointer mt-0.5 flex-shrink-0'
+                    ></input>
+                    <span className='text-xs sm:text-sm text-gray-500 leading-relaxed'>(If checked, rent amount will be settled for this month.)</span>
+                  </div>
                 </div>
+               
               </div>
              {
               !isDeposite && 
-              <div className='flex flex-col gap-2'>
-               <label>Amount <span className='text-sm text-red-500'>*</span></label>
+              <div className='flex flex-col gap-1.5 sm:gap-2'>
+               <label className='text-sm sm:text-base'>Amount <span className='text-sm text-red-500'>*</span></label>
                <div className='flex flex-col'>
                  <input 
                  type='number'
                  {...register("amount",{ valueAsNumber: true })}
-                 className="p-2 border border-neutral-300 rounded-md outline-none"
+                 className="p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                  placeholder="Enter amount"
                  ></input>
-                 {errors.amount && <span className='text-sm text-red-500'>{errors.amount.message}</span>}
+                 {errors.amount && <span className='text-xs sm:text-sm text-red-500 mt-1'>{errors.amount.message}</span>}
                </div>
               </div>
              }
-              <div className='flex flex-col gap-2'>
-                <label>Select Month/Year <span className='text-sm text-red-500'>*</span></label>
+              <div className='flex flex-col gap-1.5 sm:gap-2'>
+                <label className='text-sm sm:text-base'>Select Month/Year <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                  <select 
                  {...register("date")}
                  onChange={handleSelectRent}
-                 className='p-2 border border-neutral-300 rounded-md outline-none'
+                 className='p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                  >
                    {
                       selectedCustomer?.pending_rent.map((item,index)=>(
@@ -168,35 +206,35 @@ function CustomerRentForm({selectedCustomer, onClose}) {
                       ))
                    }
                  </select>
-                 {errors.date && <span className='text-sm text-red-500'>{errors.date.message}</span>}
+                 {errors.date && <span className='text-xs sm:text-sm text-red-500 mt-1'>{errors.date.message}</span>}
                 </div>
               </div>
               {
                 !isDeposite &&
-                <div className='flex flex-col gap-2'>
-                 <label>Select Payment Mode <span className='text-sm text-red-500'>*</span></label>
+                <div className='flex flex-col gap-1.5 sm:gap-2'>
+                 <label className='text-sm sm:text-base'>Select Payment Mode <span className='text-sm text-red-500'>*</span></label>
                  <div className='flex flex-col'>
                     <select
                     {...register('payment_mode')}
-                    className='p-2 border border-neutral-300 rounded-md outline-none'
+                    className='p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                     >
                       <option value={''}>-- Select Payment Mode --</option>
                       <option value={'cash'}>Cash</option>
                       <option value={'upi'}>UPI</option>
                       <option value={'bank_transfer'}>Bank Transfer</option>
                     </select>
-                    {errors.payment_mode && <span className='text-sm text-red-500'>{errors.payment_mode.message}</span>}
+                    {errors.payment_mode && <span className='text-xs sm:text-sm text-red-500 mt-1'>{errors.payment_mode.message}</span>}
                  </div>
                 </div>
               }
               {
                 !isDeposite && 
-                <div className='flex flex-col gap-1'>
-                <label>Select Bank Account <span className='text-red-500 text-sm'>*</span></label>
+                <div className='flex flex-col gap-1.5 sm:gap-2'>
+                <label className='text-sm sm:text-base'>Select Bank Account <span className='text-red-500 text-sm'>*</span></label>
                 <div className='flex flex-col'>
                    <select 
                    {...register('bank_account')}
-                   className='p-2 border border-neutral-300 rounded-md outline-none'>
+                   className='p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'>
                      <option value={''}>-- Select Bank Account --</option>
                      {
                        bankAccounts.map((item, index) => (
@@ -204,15 +242,16 @@ function CustomerRentForm({selectedCustomer, onClose}) {
                        ))
                      }
                    </select>
+                   {errors.bank_account && <span className='text-xs sm:text-sm text-red-500 mt-1'>{errors.bank_account.message}</span>}
                 </div>
                </div> 
               }
-              <div className="flex justify-center items-center">
-              <button type="submit" disabled={loading} className="p-2 hover:bg-blue-600 w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium">
+              <div className="flex justify-center items-center pt-2">
+              <button type="submit" disabled={loading} className="p-2.5 sm:p-3 hover:bg-blue-600 w-full sm:w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed">
                 {
                   loading ? 
-                  <LoaderCircle className="animate-spin"></LoaderCircle> :
-                  "Pay"
+                  <LoaderCircle className="animate-spin w-5 h-5"></LoaderCircle> :
+                  "Submit"
                 }
              </button>
           </div>

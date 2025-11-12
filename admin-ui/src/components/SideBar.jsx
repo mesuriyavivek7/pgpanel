@@ -121,7 +121,7 @@ let accountRoutes = [
   },
 ];
 
-function SideBar({ showSideBar, type }) {
+function SideBar({ showSideBar, setShowSideBar, type }) {
   const location = useLocation();
 
   const isActive = (label) => {
@@ -142,50 +142,80 @@ function SideBar({ showSideBar, type }) {
     return false;
   };
 
+  const handleLinkClick = () => {
+    // Close sidebar on mobile when a link is clicked
+    if (setShowSideBar) {
+      // Use media query to check if we're on mobile
+      const isMobile = window.matchMedia('(max-width: 767px)').matches;
+      if (isMobile) {
+        setShowSideBar(false);
+      }
+    }
+  };
+
+  const handleBackdropClick = () => {
+    if (setShowSideBar) {
+      setShowSideBar(false);
+    }
+  };
+
   let routes = type === 'account' ? accountRoutes : adminRoutes
 
   return (
-    <div
-      className={`w-64 bg-white border-r border-neutral-200 fixed top-0 ${
-        showSideBar ? "left-0" : "-left-64 "
-      } md:left-0  bottom-0 z-20`}
-    >
-      {/* Logo */}
-      <div className="h-16 w-full flex justify-center gap-2 items-center">
-        <div className="bg-blue-500 rounded-md flex justify-center items-center p-2">
-          <House size={18} className="text-white"></House>
+    <>
+      {/* Backdrop overlay for mobile */}
+      <div
+        className={`fixed inset-0 bg-black/40 z-30 md:hidden transition-opacity duration-300 ease-in-out ${
+          showSideBar ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={handleBackdropClick}
+        aria-hidden="true"
+      ></div>
+      
+      {/* Sidebar */}
+      <div
+        className={`w-72 md:w-64 bg-white border-r border-neutral-200 fixed top-0 ${
+          showSideBar ? "left-0" : "-left-72"
+        } md:left-0 bottom-0 z-40 md:z-20 transition-[left] duration-300 ease-out overflow-y-auto`}
+      >
+        {/* Logo */}
+        <div className="h-14 sm:h-16 w-full flex justify-center gap-2 items-center px-2 sm:px-4 border-b border-neutral-200">
+          <div className="bg-blue-500 rounded-md flex justify-center items-center p-1.5 sm:p-2">
+            <House size={16} className="sm:w-5 sm:h-5 text-white"></House>
+          </div>
+          <h1 className="text-lg sm:text-xl font-semibold">PgPanel</h1>
         </div>
-        <h1 className="text-xl font-semibold">PgPanel</h1>
-      </div>
-      {/* Links */}
-      <div className="flex flex-col p-6 gap-4">
-        {routes.map(
-          ({ link, label, icon: Icon }, index) => (
-            <Link
-              key={index}
-              to={link}
-              className={`group flex p-2 items-center hover:bg-blue-100 gap-2 ${
-                isActive(label) && "bg-blue-100"
-              } rounded-md`}
-            >
-              <Icon
-                className={`${
-                  isActive(label) && "text-blue-500"
-                } group-hover:text-blue-500`}
-                size={20}
-              ></Icon>
-              <span
-                className={`${
-                  isActive(label) ? "text-blue-500" : "text-black"
-                } group-hover:text-blue-500 font-medium`}
+        
+        {/* Links */}
+        <div className="flex flex-col p-3 sm:p-4 md:p-6 gap-2 sm:gap-3 md:gap-4">
+          {routes.map(
+            ({ link, label, icon: Icon }, index) => (
+              <Link
+                key={index}
+                to={link}
+                onClick={handleLinkClick}
+                className={`group flex p-2 sm:p-2.5 items-center hover:bg-blue-100 gap-2 sm:gap-3 ${
+                  isActive(label) && "bg-blue-100"
+                } rounded-md transition-colors duration-200`}
               >
-                {label}
-              </span>
-            </Link>
-          )
-        )}
+                <Icon
+                  className={`flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 ${
+                    isActive(label) && "text-blue-500"
+                  } group-hover:text-blue-500 transition-colors`}
+                ></Icon>
+                <span
+                  className={`text-sm sm:text-base ${
+                    isActive(label) ? "text-blue-500" : "text-black"
+                  } group-hover:text-blue-500 font-medium transition-colors`}
+                >
+                  {label}
+                </span>
+              </Link>
+            )
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 

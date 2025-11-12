@@ -88,46 +88,46 @@ function MonthlyBillForm({monthlyBill,onClose}) {
 
   
   return (
-    <div className='fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center'>
-        <div className='flex w-xl flex-col gap-4 bg-white rounded-2xl p-4'>
+    <div className='fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center px-4 py-4 sm:px-6 sm:py-6'>
+        <div className='flex w-full max-w-xl flex-col gap-3 sm:gap-4 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 max-h-[90vh] overflow-y-auto'>
            <div className="flex items-center gap-2">
-             <ChevronLeft size={28} onClick={()=>onClose(false)} className="cursor-pointer"></ChevronLeft>
-             <h1 className="text-2xl font-semibold">{monthlyBill ? "Edit Monthly Bill" : "Add Monthly Bill"}</h1>
+             <ChevronLeft size={24} className="sm:w-7 sm:h-7 cursor-pointer flex-shrink-0" onClick={()=>onClose(false)}></ChevronLeft>
+             <h1 className="text-lg sm:text-xl md:text-2xl font-semibold break-words">{monthlyBill ? "Edit Monthly Bill" : "Add Monthly Bill"}</h1>
            </div>
-           <form onSubmit={handleSubmit(monthlyBill ? handleEditMonthlyBill : handleAddMonthlyBill)} className='flex flex-col gap-4'>
-             <div className='flex flex-col gap-2'>
-                <label>Bill Name <span className='text-red-500'>*</span></label>
+           <form onSubmit={handleSubmit(monthlyBill ? handleEditMonthlyBill : handleAddMonthlyBill)} className='flex flex-col gap-3 sm:gap-4'>
+             <div className='flex flex-col gap-1.5 sm:gap-2'>
+                <label className='text-sm sm:text-base'>Bill Name <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                     <input 
                     {...register('payment_name')}
-                    className='p-2 border border-neutral-300 rounded-md outline-none'
+                    className='p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                     placeholder='Enter bill name'
                     type='text'>
                     </input>
-                    {errors.payment_name && <span className='text-sm text-red-500'>{errors.payment_name.message}</span>}
+                    {errors.payment_name && <span className='text-xs sm:text-sm text-red-500 mt-1'>{errors.payment_name.message}</span>}
                 </div>
              </div>
-             <div className='flex flex-col gap-2'>
-                <label>Amount <span className='text-red-500'>*</span></label>
+             <div className='flex flex-col gap-1.5 sm:gap-2'>
+                <label className='text-sm sm:text-base'>Amount <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                     <input 
                     disabled={monthlyBill}
                     {...register('amount', {valueAsNumber: true})}
-                    className='p-2 border disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 border-neutral-300 rounded-md outline-none'
+                    className='p-2 sm:p-2.5 text-sm sm:text-base border disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                     placeholder='Enter bill amount'
                     type='number'>
                     </input>
-                    {errors.amount && <span className='text-sm text-red-500'>{errors.amount.message}</span>}
+                    {errors.amount && <span className='text-xs sm:text-sm text-red-500 mt-1'>{errors.amount.message}</span>}
                 </div>
              </div>
-             <div className='flex flex-col gap-2'>
-                <label>Branch <span className='text-red-500'>*</span></label>
+             <div className='flex flex-col gap-1.5 sm:gap-2'>
+                <label className='text-sm sm:text-base'>Branch <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                     <select 
                     {...register("branch")}
                     onChange={(e)=>setSelectedBranch(e.target.value)}
                     value={selectedBranch}
-                    className='p-2 border border-neutral-300 rounded-md outline-none'
+                    className='p-2 sm:p-2.5 text-sm sm:text-base border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                     >
                         <option value={''}>-- Select Branch --</option>
                         {
@@ -136,37 +136,37 @@ function MonthlyBillForm({monthlyBill,onClose}) {
                           ))
                         }
                     </select>
-                    {errors.branch && <span className='text-sm text-red-500'>{errors.branch.message}</span>}
+                    {errors.branch && <span className='text-xs sm:text-sm text-red-500 mt-1'>{errors.branch.message}</span>}
                 </div>
              </div>
-             <div className='flex flex-col gap-2'>
-                <label>Starting Date <span className='text-red-500'>*</span></label>
+             <div className='flex flex-col gap-1.5 sm:gap-2'>
+                <label className='text-sm sm:text-base'>Starting Date <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                     <input 
                     disabled={monthlyBill}
                     {...register('starting_date', {valueAsDate: true})}
-                    className='p-2 border disabled:cursor-no-drop disabled:bg-gray-100 disabled:text-gray-400 border-neutral-300 rounded-md outline-none'
+                    className='p-2 sm:p-2.5 text-sm sm:text-base border disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400 border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                     type='date'>
                     </input>
-                    {errors.starting_date && <span className='text-sm text-red-500'>{errors.starting_date.message}</span>}
+                    {errors.starting_date && <span className='text-xs sm:text-sm text-red-500 mt-1'>{errors.starting_date.message}</span>}
                 </div>
              </div>
-             <div className='flex flex-col gap-2'>
-                <label>Notes </label>
+             <div className='flex flex-col gap-1.5 sm:gap-2'>
+                <label className='text-sm sm:text-base'>Notes</label>
                 <div className='flex flex-col'>
                     <textarea 
                     {...register('notes')}
-                    className='p-2 border border-neutral-300 rounded-md outline-none'
-                    placeholder='Enter bill amount'
-                    type='number'>
+                    rows={3}
+                    className='p-2 sm:p-2.5 text-sm sm:text-base resize-none border border-neutral-300 rounded-md outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                    placeholder='Enter notes'>
                     </textarea>
                 </div>
              </div>
-             <div className='flex justify-center items-center'>
-             <button type="submit" disabled={loading} className="p-2 hover:bg-blue-600 w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium">
+             <div className='flex justify-center items-center pt-2'>
+             <button type="submit" disabled={loading} className="p-2.5 sm:p-3 hover:bg-blue-600 w-full sm:w-36 transition-all duration-300 cursor-pointer flex justify-center items-center bg-blue-500 rounded-md text-white font-medium text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed">
                 {
                   loading ? 
-                  <LoaderCircle className="animate-spin"></LoaderCircle> :
+                  <LoaderCircle className="animate-spin w-5 h-5"></LoaderCircle> :
                   monthlyBill ? "Save" 
                   : "Submit"
                 }

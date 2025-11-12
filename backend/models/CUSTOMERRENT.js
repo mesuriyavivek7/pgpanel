@@ -18,6 +18,10 @@ const customerrentSchema = new mongoose.Schema({
       enum: ['Paid','Pending'],
       default:'Pending'
     },
+    isSettled:{
+      type:Boolean,
+      default:false
+    },
     isDeposite:{
       type:Boolean,
       default:false

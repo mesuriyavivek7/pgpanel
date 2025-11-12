@@ -1,5 +1,6 @@
 import { useEffect, useState, } from "react";
 import Tooltip from '@mui/material/Tooltip';
+import { GridActionsCellItem } from "@mui/x-data-grid";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { sliceString } from "../helper";
@@ -17,12 +18,13 @@ import { formatDate } from "../helper";
 import { capitalise } from "../helper";
 
 //Importing icons
-import { UserPen } from 'lucide-react';
+import { UserPen, BadgeIndianRupee, UserRoundPlus } from 'lucide-react';
 import { Minus } from 'lucide-react';
 import { Check } from 'lucide-react';
+import { Coins } from 'lucide-react';
 
 
-export const useCustomerTable = (handleOpenForm, room) =>{
+export const useCustomerTable = (handleOpenForm, room, handleOpenDepositeForm, handleOpenAdvanceRentForm, handleOpenAdvanceBookingForm) =>{
     const [rows,setRows] = useState([])
     const [loading , setLoading] = useState(false)
     const navigate = useNavigate()
@@ -58,17 +60,72 @@ export const useCustomerTable = (handleOpenForm, room) =>{
         setLoading(false)
       }
     }
+
+    const renderAction = (data) =>{
+
+      let actionArr = []
+
+       actionArr.push(
+           <GridActionsCellItem
+           icon={<UserPen size={22}></UserPen>}
+           label="Edit"
+           onClick={()=>handleOpenForm(data.row)}
+           showInMenu
+           ></GridActionsCellItem>,
+           <GridActionsCellItem
+           icon={data.row.status ? <Minus size={22}></Minus>:<Check size={22}></Check>}
+           label={data.row.status ? "Deactivate" : "Activate"}
+           onClick={()=>handleChangeCustomerStatus(data.row._id, !data.row.status)}
+           showInMenu
+           ></GridActionsCellItem>, 
+           <GridActionsCellItem
+           icon={<Coins></Coins>}
+           label="Advance Rent"
+           onClick={()=>handleOpenAdvanceRentForm(data.row)}
+           showInMenu
+           ></GridActionsCellItem>
+
+         )
+
+      if(data.row.deposite_status === 'Pending'){
+            actionArr.push(
+              <GridActionsCellItem
+               onClick={()=>handleOpenDepositeForm(data.row)}
+               icon={<BadgeIndianRupee size={22}></BadgeIndianRupee>}
+               label="Collect Deposite"
+               showInMenu
+              ></GridActionsCellItem>
+            )
+      }
+
+      if(data.row.in_notice_period && !data.row.customer_replaced){
+            actionArr.push(
+              <GridActionsCellItem
+              icon={<UserRoundPlus></UserRoundPlus>}
+              onClick={()=>handleOpenAdvanceBookingForm(data.row)}
+              label="Advance Booking"
+              showInMenu
+              ></GridActionsCellItem>
+            )
+      }
+       
+       return actionArr
+
+     }
   
     const columns = [
         {
             headerName: 'Full Name',
             field: 'customer_name',
             minWidth: 220,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
               <div className="flex items-center w-full h-full">
                  <div className="flex items-center gap-3">
                    <img src={BOY} alt="vendor" className="w-9 h-9 rounded-full" />
-                   <span>{capitalise(params.value)}</span>
+                   <div className="flex flex-col gap-1">
+                     <span className="leading-5">{capitalise(params.value)}</span>
+                     {params.row.in_notice_period && <span className="leading-5 w-22 text-xs flex justify-center items-center font-medium p-0.5 bg-blue-500 text-white rounded-2xl">On Notice</span>}
+                   </div>
                  </div>
               </div>
             ),
@@ -77,7 +134,7 @@ export const useCustomerTable = (handleOpenForm, room) =>{
             headerName: 'Mobile No',
             field: 'mobile_no',
             minWidth: 200,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
               <div className="flex w-full h-full items-center">
                <div className="flex items-center gap-2">
                 <img src={PHONE} alt="phone" className="w-7 h-7 rounded-full" />
@@ -91,7 +148,7 @@ export const useCustomerTable = (handleOpenForm, room) =>{
             field: 'deposite_amount',
             minWidth: 200,
             flex: 1,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
               <div className="flex items-center w-full h-full">
                 <div className="flex items-center gap-2">
                  <span>₹{params.value}</span>
@@ -104,7 +161,7 @@ export const useCustomerTable = (handleOpenForm, room) =>{
             field: 'rent_amount',
             minWidth: 200,
             flex: 1,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
               <div className="flex items-center w-full h-full">
                 <div className="flex items-center gap-2">
                  <span>₹{params.value}</span>
@@ -113,42 +170,72 @@ export const useCustomerTable = (handleOpenForm, room) =>{
             ),
           },
           {
+            headerName:'Status',
+            field: 'status',
+            minWidth: 140,
+            flex: 1,
+            renderCell: (params) => {
+              const isActive = params.value;
+              return (
+                <div className="flex items-center w-full h-full">
+                  <span className={`px-3 py-1 leading-5 flex justify-center items-center rounded-full w-20 text-white font-medium ${isActive===true ? 'bg-green-500' : 'bg-yellow-500'}`}>
+                    {params.value === true ? "Active" : "Inactive"}
+                  </span>
+                </div>
+              );
+            },
+          },
+          {
             headerName: 'Room No',
-            field: 'room.room_id',
+            field: 'room',
             minWidth: 160,
             flex: 1,
-            valueGetter: (params) => params.data.room?.room_id,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
               <div className="flex items-center w-full h-full">
                 <div className="flex items-center gap-2">
-                  <span className="font-bold text-lg">{params.value}</span>
+                  <span className="font-bold text-lg">{params.value.room_id}</span>
                  </div>
               </div>
             ),
           },
           {
             headerName: 'Branch',
-            field: 'branch.branch_name',
+            field: 'branch',
             minWidth: 260,
             flex: 1,
-            valueGetter: (params) => params.data.branch?.branch_name,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
              <div className="flex items-center w-full h-full">
-                <Tooltip title={params.value}>
+                <Tooltip title={params.value.branch_name}>
                  <div className="flex items-center gap-2">
                    <img src={BRANCH} alt="branch" className="w-7 h-7 rounded-full" />
-                   <span>{sliceString(params.value,20)}</span>
+                   <span>{sliceString(params.value.branch_name,20)}</span>
                  </div>
                 </Tooltip>
              </div>
             ),
           },
           {
+            headerName:'Deposite Status',
+            field: 'deposite_status',
+            minWidth: 160,
+            flex: 1,
+            renderCell: (params) => {
+              const status = params.value;
+              return (
+                <div className="flex items-center w-full h-full">
+                  <span className={`px-3 py-1 leading-5 flex justify-center items-center rounded-full w-20 text-white font-medium ${status==="Paid" ? 'bg-green-500' : 'bg-yellow-500'}`}>
+                    {status === "Paid" ? "Paid" : `₹${params.row.deposite_amount - params.row.paid_deposite_amount}` }
+                  </span>
+                </div>
+              );
+            },
+          },
+          {
             headerName: 'Joining Date',
             field: 'joining_date',
             minWidth: 200,
             flex: 1,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
               <div className="flex items-center w-full h-full">
                 <div className="flex items-center gap-2">
                   <img src={CALENDAR} alt="calendar" className="w-7 h-7" />
@@ -159,52 +246,27 @@ export const useCustomerTable = (handleOpenForm, room) =>{
           },
           {
             headerName: 'Added By',
-            field: 'added_by.full_name',
+            field: 'added_by',
             minWidth: 200,
             flex: 1,
-            valueGetter: (params) => params.data.added_by?.full_name,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
               <div className="flex w-full h-full items-center">
                 <div className="flex items-center gap-2">
                   <img src={ADMIN} alt="admin" className="w-7 h-7 rounded-full" />
                   <div className="flex flex-col">
-                  <span className="font-medium">{params.value}</span>
-                  <span className="text-sm">{params?.data?.added_by_type}</span>
+                  <span className="font-medium leading-5">{params.value.full_name}</span>
+                  <span className="text-sm">{params?.row?.added_by_type}</span>
                   </div>
               </div>
               </div>
             ),
           },
           {
-            headerName: 'Action',
-            field: 'action',
-            minWidth: 200,
-            flex: 1,
-            cellRenderer: (params) => {
-              const isActive = params.data.status;
-              return (
-                <div className="flex items-center w-full h-full">
-                 <div className="flex items-center gap-2">
-                  <Tooltip title="Edit">
-                    <button onClick={()=>handleOpenForm(params.data)} className="flex cursor-pointer bg-blue-500 text-white p-1 justify-center items-center rounded-full">
-                      <UserPen size={18} />
-                    </button>
-                  </Tooltip>
-                  <Tooltip title={isActive ? 'Inactivate' : 'Activate'}>
-                    <button
-                      disabled={loading}
-                      onClick={()=>handleChangeCustomerStatus(params.data._id, !params.data.status)}
-                      className={`flex cursor-pointer p-1 justify-center items-center rounded-full ${
-                        isActive ? 'bg-red-500' : 'bg-green-500'
-                      } text-white`}
-                    >
-                      {isActive ? <Minus size={18} /> : <Check size={18} />}
-                    </button>
-                  </Tooltip>
-                </div>
-                </div>
-              );
-            },
+            headerName: 'Actions',
+            field: 'actions',
+            type:'actions',
+            minWidth: 150,
+            getActions: (params) => renderAction(params)
           },        
     ]
 

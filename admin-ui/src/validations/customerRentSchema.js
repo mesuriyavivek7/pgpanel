@@ -17,6 +17,10 @@ export const customerRentSchema = z.object({
     boolean({invalid_type_error: "isDeposite must be boolean."})
     .default(false),
 
+    isSettled: z. 
+    boolean({invalid_type_error: "isSettled must be boolean."})
+    .default(false),
+
     payment_mode: z.
     string()
     .optional(),

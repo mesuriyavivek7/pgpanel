@@ -32,6 +32,7 @@ export const useInventoryTable = () => {
         try{
            setLoading(true)
            const data = await getAllInventoryTransaction(searchQuery, branch)
+           console.log(data)
            setRows(data)
         }catch(err) {
             console.log(err)
@@ -48,28 +49,28 @@ export const useInventoryTable = () => {
     const columns = [
         {
             headerName: 'Item Name',
-            field: 'refId.item_name',
+            field: 'itemname',
             minWidth: 220,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
               <div className="flex items-center w-full h-full">
                 <div className="flex items-center gap-3">
                   <img
-                    src={getItemImage(params.data.refId.item_type)}
+                    src={getItemImage(params.row.refId.item_type)}
                     alt="vendor"
                     className="w-9 h-9 rounded-full"
                   />
-                  <span>{capitalise(params.value)}</span>
+                  <span>{capitalise(params.row.refId.item_name)}</span>
                 </div>
               </div>
             )
         },
         {
             headerName: 'Amount',
-            field: 'refId.amount',
+            field: 'amount',
             minWidth:150,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
                 <div className="flex items-center w-full h-full">
-                   <span className="font-medium">₹{params.value}</span>
+                   <span className="font-medium">₹{params.row.refId.amount}</span>
                 </div>
             )
         },
@@ -77,7 +78,7 @@ export const useInventoryTable = () => {
             headerName: 'Payment Mode',
             field:'payment_mode',
             minWidth:200,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
                 <div className="flex items-center w-full h-full">
                     <span className="font-medium">{params.value}</span>
                 </div>
@@ -85,16 +86,15 @@ export const useInventoryTable = () => {
         },
         {
             headerName: 'Branch',
-            field: 'branch.branch_name',
+            field: 'branch',
             minWidth: 260,
             flex: 1,
-            valueGetter: (params) => params.data.branch.branch_name,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
              <div className="flex items-center w-full h-full">
-                <Tooltip title={params.value}>
+                <Tooltip title={params.value.branch_name}>
                  <div className="flex items-center gap-2">
                    <img src={BRANCH} alt="branch" className="w-7 h-7 rounded-full" />
-                   <span>{sliceString(params.value,20)}</span>
+                   <span>{sliceString(params.value.branch_name,20)}</span>
                  </div>
                 </Tooltip>
              </div>
@@ -102,12 +102,12 @@ export const useInventoryTable = () => {
         },
         {
             headerName: "Type",
-            field: 'refId.item_type',
+            field: 'refId',
             minWidth:200,
             flex: 1,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
                 <div className="flex items-center w-full h-full">
-                    <span>{params.value}</span>
+                    <span>{params.value.item_type}</span>
                 </div>
             )
         },
@@ -116,7 +116,7 @@ export const useInventoryTable = () => {
             field:'createdAt',
             minWidth: 200,
             flex: 1,
-            cellRenderer: (params) => (
+            renderCell: (params) => (
                 <div className="flex items-center w-full h-full">
                   <div className="flex items-center gap-2">
                     <img src={CALENDAR} alt="calendar" className="w-7 h-7" />

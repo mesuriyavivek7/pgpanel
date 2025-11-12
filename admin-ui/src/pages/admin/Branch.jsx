@@ -46,22 +46,22 @@ function Branch() {
   }
 
   return (
-    <div className='flex flex-col h-full gap-8'>
+    <div className='flex flex-col h-full gap-4 sm:gap-6 md:gap-8 px-2 sm:px-0'>
         {openForm && <AddNewBranch selectedBranch={selectedBranch} onClose={handleCloseForm}></AddNewBranch>}
         <Breadcrumb searchQuery={searchQuery} setSearchQuery={setSearchQuery} onClick={handleOpenForm}></Breadcrumb>
         {
           loading ? 
-          <div className='flex h-full w-full justify-center items-center'>
-             <LoaderCircle size={30} className='text-blue-500 animate-spin'></LoaderCircle>
+          <div className='flex h-full w-full justify-center items-center min-h-[200px] sm:min-h-[300px]'>
+             <LoaderCircle className='w-6 h-6 sm:w-8 sm:h-8 text-blue-500 animate-spin'></LoaderCircle>
           </div>
           :branch.length === 0 ? 
-          <div className='flex h-full w-full justify-center items-center'>
-            <div className='flex flex-col items-center gap-2'>
-               <Building2 className='text-gray-500' size={36}></Building2>
-               <span className='text-gray-500'>No Branch Found.</span>
+          <div className='flex h-full w-full justify-center items-center min-h-[200px] sm:min-h-[300px]'>
+            <div className='flex flex-col items-center gap-2 sm:gap-3'>
+               <Building2 className='text-gray-500 w-8 h-8 sm:w-9 sm:h-9'></Building2>
+               <span className='text-gray-500 text-sm sm:text-base'>No Branch Found.</span>
             </div>
           </div>
-          :<div className='grid grid-cols-1 md:grid-cols-3 items-stretch gap-8'>
+          :<div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 items-stretch gap-4 sm:gap-6 md:gap-8'>
             {
               branch.map((item, index) => (
                 <BranchCard openForm={handleOpenForm} key={index} item={item}></BranchCard>

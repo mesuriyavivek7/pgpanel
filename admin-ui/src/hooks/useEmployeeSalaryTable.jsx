@@ -41,11 +41,11 @@ export const useEmployeeSalaryTable = (handleOpenForm) => {
       headerName: "Full Name",
       field: "employee_name",
       minWidth: 220,
-      cellRenderer: (params) => (
+      renderCell: (params) => (
         <div className="flex items-center w-full h-full">
           <div className="flex items-center gap-3">
             <img
-              src={params.data.employee_type === "Co-Worker" ? WORKER : CHEF}
+              src={params.row.employee_type === "Co-Worker" ? WORKER : CHEF}
               alt="vendor"
               className="w-9 h-9 rounded-full"
             />
@@ -58,7 +58,7 @@ export const useEmployeeSalaryTable = (handleOpenForm) => {
         headerName: 'Mobile No',
         field: 'mobile_no',
         minWidth: 200,
-        cellRenderer: (params) => (
+        renderCell: (params) => (
           <div className="flex w-full h-full items-center">
             <div className="flex items-center gap-2">
             <img src={PHONE} alt="phone" className="w-7 h-7 rounded-full" />
@@ -72,7 +72,7 @@ export const useEmployeeSalaryTable = (handleOpenForm) => {
         field: 'salary',
         minWidth: 200,
         flex: 1,
-        cellRenderer: (params) => (
+        renderCell: (params) => (
           <div className="flex items-center w-full h-full">
             <div className="flex items-center gap-2">
              <span>₹{params.value}</span>
@@ -85,14 +85,14 @@ export const useEmployeeSalaryTable = (handleOpenForm) => {
         field:'pending_salary',
         minWidth: 250,
         flex: 1,
-        cellRenderer: (params) => (
+        renderCell: (params) => (
           <div className="flex items-center w-full h-full">
              <div className="flex items-center gap-2">
                 {
                     params.value.map((item,index) => (
                         <div key={index} className={`flex p-1 border rounded-md ${item.required ? "bg-red-100" : "bg-neutral-50"} items-center gap-2`}>
-                            <span>{getShortMonthName(item.month)}</span>
-                            <span>{item.year}</span>
+                            <span className="leading-5">{getShortMonthName(item.month)}</span>
+                            <span className="leading-5">{item.year}</span>
                         </div>
                     ))
                 }
@@ -105,8 +105,7 @@ export const useEmployeeSalaryTable = (handleOpenForm) => {
         field: 'branch',
         minWidth: 260,
         flex: 1,
-        valueGetter: (params) => params.data.branch,
-        cellRenderer: (params) => (
+        renderCell: (params) => (
          <div className="flex items-center w-full h-full">
             <Tooltip title={params.value}>
              <div className="flex items-center gap-2">
@@ -122,10 +121,10 @@ export const useEmployeeSalaryTable = (handleOpenForm) => {
             field: 'action',
             minWidth: 200,
             flex: 1,
-            cellRenderer: (params) => {
+            renderCell: (params) => {
                 return (
                     <div className="flex items-center w-full h-full">
-                        <button onClick={()=>handleOpenForm(params.data)} disabled={loading} className="bg-blue-500 hover:bg-blue-600 transition-colors duration-300 cursor-pointer text-lg w-32 text-white rounded-md p-1.5">
+                        <button onClick={()=>handleOpenForm(params.row)} disabled={loading} className="bg-blue-500 hover:bg-blue-600 transition-colors duration-300 cursor-pointer text-lg w-32 text-white rounded-md p-1.5">
                             Pay Salary 
                         </button>
                     </div>

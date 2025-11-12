@@ -13,10 +13,46 @@ export const createTransactionForCustomerPay = async (transactionData) =>{
      }
 }
 
+//Create transaction for advance rent pay
+export const createTransactionForAdvanceRentPay = async (transactionData) =>{
+   try{
+      const response = await api.post('/transaction/advance-rent', transactionData)
+      return response.data.data
+   }catch(err){
+      console.log(err)
+      const errMessage = err?.response?.data?.message || "Something went wrong."
+      throw new Error(errMessage)
+   }
+}
+
+//Create transaction for deposite collection
+export const createTransactionForDepositeCollection = async (transactionData) =>{
+   try{
+      const response = await api.post('/transaction/deposite', transactionData)
+      return response.data.data
+   }catch(err){
+      console.log(err)
+      const errMessage = err?.response?.data?.message || "Something went wrong."
+      throw new Error(errMessage)
+   }
+}
+
 //Create transaction for employee salary 
 export const createTransactionForEmployeePay = async (transactionData) =>{
    try{
       const response = await api.post('/transaction/employee-salary', transactionData)
+      return response.data.data
+   }catch(err){
+      console.log(err)
+      const errMessage = err?.response?.data?.message || "Something went wrong."
+      throw new Error(errMessage)
+   }
+}
+
+//Create transaction for employee advance salary
+export const createTransactionForEmployeeAdvancePay = async (transactionData) =>{
+   try{
+      const response = await api.post('/transaction/employee-advance-salary', transactionData)
       return response.data.data
    }catch(err){
       console.log(err)
@@ -72,3 +108,4 @@ export const getAllTransactions = async (branch="",transactionType="") =>{
       throw new Error(errMessage)
    }
 }
+

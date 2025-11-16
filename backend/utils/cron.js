@@ -205,7 +205,7 @@ cron.schedule('0 0 1 * *', async () => {
     const month = today.getMonth() + 1;
     const year = today.getFullYear();
     await createMonthlyCustomerRentTask(month, year);
-    await createEmployeeSalaryTask();
+    await createEmployeeSalaryTask(month, year);
 })
 
 export const initCronsJobs = async () =>{

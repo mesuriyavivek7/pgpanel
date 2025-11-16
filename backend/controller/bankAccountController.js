@@ -78,6 +78,7 @@ export const getAllBankAccount = async (req, res, next) =>{
             _id: acc._id,
             account_holdername: acc.account_holdername,
             current_balance: balance,
+            is_default: acc.is_default,
             last_reset: latestResetDate || null
           }
 

@@ -22,6 +22,7 @@ function BankAccount() {
     try{
         const data = await getAllBankAccount()
         setBankAccounts(data)
+        console.log(data)
         setTotalBalance(data.reduce((x,y)=> x+y.current_balance,0))
     }catch(err){
         console.log(err)
@@ -132,7 +133,10 @@ function BankAccount() {
                 bankAccounts.map((acc, index) => (
                 <div key={index} className='flex flex-col sm:flex-row w-full p-2 sm:p-3 rounded-md bg-gray-50 border border-neutral-200 justify-between items-start sm:items-center gap-2 sm:gap-0'>
                  <div className='flex flex-col gap-1 flex-1 min-w-0'>
-                    <h1 className='text-sm sm:text-base font-medium break-words'>{acc.account_holdername}</h1>
+                    <div className='flex items-center gap-2'>
+                       <h1 className='text-sm sm:text-base font-medium break-words'>{acc.account_holdername}</h1>
+                       {acc.is_default && <span className='text-xs sm:text-sm bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full font-medium'>Default</span>}
+                    </div>
                     <span className='text-sm sm:text-base font-bold'>{convertIntoRupees(acc.current_balance)}</span>
                  </div>
                  <div className='flex items-center gap-1.5 sm:gap-2 flex-shrink-0'>

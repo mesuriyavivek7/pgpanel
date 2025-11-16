@@ -12,7 +12,7 @@ export const createCustomer = async (req, res, next) => {
         const { mongoid, userType } = req
         const { customer_name, mobile_no, deposite_amount, variable_deposite_amount, rent_amount, room, branch, joining_date, bank_account, payment_mode, isAdvance, replaceCustomer } = req.body
 
-        if(!variable_deposite_amount) return res.status(400).json({message:"Please provide variable deposite amount.",success:false})
+        if(variable_deposite_amount===null || variable_deposite_amount===undefined) return res.status(400).json({message:"Please provide variable deposite amount.",success:false})
 
         if(isAdvance && isAdvance === true){
             if(!replaceCustomer){

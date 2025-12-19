@@ -1,7 +1,7 @@
 import express from 'express'
 import { verifyToken, verifyAdmin } from '../middleware/verifyUser.js'
 import { changePassword, getAdminDetails, getDashboardSearch, getDashboardSummery, updateAdminDetails, uploadLogo } from '../controller/adminController.js'
-import { logoMulter } from '../middleware/Upload.js'
+import { logoMulter } from '../middleware/upload.js'
 
 const app = express.Router()
 

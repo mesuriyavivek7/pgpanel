@@ -1,6 +1,6 @@
 import express from 'express';
 import { verifyAdmin, verifyToken } from '../middleware/verifyUser.js';
-import { branchMulter } from '../middleware/Upload.js';
+import { branchMulter } from '../middleware/upload.js';
 import { createBranch, getAllBranch, getBranchById, getDashboardSummery, updateBranch } from '../controller/branchController.js';
 
 const app = express.Router()

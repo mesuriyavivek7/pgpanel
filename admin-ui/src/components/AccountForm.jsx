@@ -8,7 +8,7 @@ import { ChevronLeft, LoaderCircle } from "lucide-react";
 import { toast } from "react-toastify";
 import { getAllBranch } from "../services/branchService";
 import { createAcManager, updateAcmanager } from "../services/accountService";
-import MultiSelectDropdown from "./MultiSelectDropDown";
+import MultiSelectDropdown from "./MultiSelectDropdown"
 
 function AccountForm({ selectedAccount, onClose }) {
   const [loading, setLoading] = useState();

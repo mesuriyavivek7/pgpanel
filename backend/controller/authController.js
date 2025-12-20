@@ -27,7 +27,7 @@ export const loginUser = async (req, res, next) =>{
         expires: new Date(Date.now() + 2592000000),
         httpOnly: true,
         domain:
-         process.env.NODE_ENV === "production" ? ".digitallaundry.co.in" : undefined,
+         process.env.NODE_ENV === "production" ? ".harikrushnapg.com" : undefined,
          secure: process.env.NODE_ENV === "production",
          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       });
@@ -117,7 +117,7 @@ export const logoutPortal = async (req, res, next) =>{
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        domain: process.env.NODE_ENV === "production" ? ".digitallaundry.co.in" : undefined,
+        domain: process.env.NODE_ENV === "production" ? ".harikrushnapg.com" : undefined,
       });
   
       return res.status(200).json({ message: "Logout successful", status: 200 });

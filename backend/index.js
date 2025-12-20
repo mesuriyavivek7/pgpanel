@@ -63,7 +63,7 @@ const corsOptions = {
     credentials: true,
 };
 
-app.options("*", cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 // Middleware for using CORS
 app.use(cors(corsOptions));

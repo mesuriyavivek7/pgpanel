@@ -170,14 +170,13 @@ export const updateEmployee = async (req, res, next) => {
                     salary: salary,
                     status: "Pending",
                   },
-                },
-                { session }
+                }
               );
             }
           
             // Update employee’s salary
             employee.salary = salary;
-            await employee.save({ session });
+            await employee.save();
         }          
         if (branch) employee.branch = branch
         if (mobile_no) employee.mobile_no = mobile_no

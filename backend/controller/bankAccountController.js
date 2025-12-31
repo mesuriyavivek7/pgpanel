@@ -99,13 +99,19 @@ export const getAllBankAccount = async (req, res, next) =>{
 export const updateBankAccount = async (req, res, next) =>{
     try{
         const {accountId} = req.params 
-        const {account_holdername} = req.body 
+        const {account_holdername, is_default} = req.body 
 
         if(!accountId) return res.status(400).json({message:"Please provide account id.",success:false}) 
 
         const bankAccount = await BANKACCOUNT.findOne({_id:accountId, status:'active'}) 
 
         if(!bankAccount) return res.status(404).json({message:"Bank account not found.",success:false})
+
+        if(!is_default){
+            const allBankaccount = await BANKACCOUNT.countDocuments()
+
+            if(allBankaccount.length === 1) return res.status(400).json({message:"You can't remove this account from default. Cause there is only one bank account."}) 
+        }
 
         if(account_holdername){
 

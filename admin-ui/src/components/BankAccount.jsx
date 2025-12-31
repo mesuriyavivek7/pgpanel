@@ -140,7 +140,7 @@ function BankAccount() {
                     <span className='text-sm sm:text-base font-bold'>{convertIntoRupees(acc.current_balance)}</span>
                  </div>
                  <div className='flex items-center gap-1.5 sm:gap-2 flex-shrink-0'>
-                    <button onClick={()=>handleOpenForm(acc)} className='p-1.5 sm:p-2 hover:bg-blue-100 hover:text-blue-500 transition-all duration-300 rounded-md cursor-pointer border border-neutral-200' title='Edit'>
+                    <button onClick={()=>handleOpenForm({...acc, total: bankAccounts.length})} className='p-1.5 sm:p-2 hover:bg-blue-100 hover:text-blue-500 transition-all duration-300 rounded-md cursor-pointer border border-neutral-200' title='Edit'>
                         <Pencil size={16} className="sm:w-5 sm:h-5"></Pencil>
                     </button>
                     <button onClick={()=>handleOpenDeleteConfirm(acc)} className='p-1.5 sm:p-2 hover:bg-red-100 hover:text-red-500 transition-all duration-300 rounded-md cursor-pointer border border-neutral-200' title='Delete'>

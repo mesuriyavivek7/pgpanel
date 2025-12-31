@@ -1,11 +1,13 @@
 import React , {useState} from 'react'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { updateAdmin } from '../services/adminService';
 
 //Import icons
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, LoaderCircle } from 'lucide-react';
 
 import { profileSchema } from '../validations/profileSchema';
+import { toast } from 'react-toastify';
 
 function ProfileForm({userDetails, onClose}) {
   const [loading, setLoading] = useState()  
@@ -24,12 +26,14 @@ function ProfileForm({userDetails, onClose}) {
     }
   })
 
-  const handleEditProfileDetails = async () =>{
+  const handleEditProfileDetails = async (formData) =>{
     setLoading(true)
     try{
-    
+      const data = await updateAdmin(formData)
+      onClose(true)
+      toast.success("Profile details updated successfully.")
     }catch(err){
-
+      console.log(err)
     }finally{
       setLoading(false)
     }

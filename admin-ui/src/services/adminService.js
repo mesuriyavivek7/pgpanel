@@ -61,3 +61,15 @@ export const changePassword = async (data) =>{
       throw new Error(errMessage)
    }
 }
+
+//For change admin details
+export const updateAdmin = async (data) =>{
+   try{
+      const response = await api.put('/admin/me', data)
+      return response.data.data
+   }catch(err){
+      console.log(err)
+      const errMessage = err?.response?.data?.message
+      throw new Error(errMessage)
+   }
+} 

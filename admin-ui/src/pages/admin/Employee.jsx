@@ -4,10 +4,13 @@ import React, { useEffect, useState } from 'react'
 import EmployeeForm from '../../components/EmployeeForm';
 import { useEmployeeTable } from '../../hooks/useEmployeeTable';
 import Breadcrumb from '../../components/Breadcrumb';
+import ConfirmPopUp from '../../components/ConfirmPopUp';
 import EmployeeAdvanceSalary from '../../components/EmployeeAdvanceSalary';
 
 import { DataGrid } from '@mui/x-data-grid';
 import Box from '@mui/material/Box';
+import { deleteEmployee, exportEmployee } from '../../services/employeeService';
+import { toast } from 'react-toastify';
 
 function Employee() {
   const [openForm, setOpenForm] = useState(false)
@@ -15,6 +18,8 @@ function Employee() {
   const [selectedEmployee, setSelectedEmployee] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedBranch, setSelectedBranch] = useState('')
+  const [openConfirmation, setOpenConfirmation] = useState(false)
+  const [loader, setLoader] = useState(false)
 
   const handleOpenForm = (employee = null) =>{
     setSelectedEmployee(employee)
@@ -26,7 +31,12 @@ function Employee() {
     setSelectedEmployee(employee)
   }
 
-  const {loading, rows, columns, refetch} = useEmployeeTable(handleOpenForm, handleOpenAdvanceRentForm)
+  const handleOpenConfirmBox = (employee=null) =>{
+    setOpenConfirmation(true)
+    setSelectedEmployee(employee)
+  }
+
+  const {loading, rows, columns, refetch} = useEmployeeTable(handleOpenForm, handleOpenAdvanceRentForm, handleOpenConfirmBox)
 
   const handleCloseForm = (refresh=false) => {
     setSelectedEmployee(null)
@@ -40,15 +50,60 @@ function Employee() {
     if(refresh) refetch(searchQuery)
   }
 
+  const handleCloseConfirmBox = (refresh = false) =>{
+    setOpenConfirmation(false)
+    setSelectedEmployee(null)
+    if(refresh) refetch(searchQuery)
+  }
+
   useEffect(()=>{
      refetch(searchQuery, selectedBranch)
   },[searchQuery, selectedBranch])
 
+  const handleDeleteEmployee = async () =>{
+    setLoader(true)
+     try{
+      const data = await deleteEmployee(selectedEmployee._id)
+      refetch()
+      handleCloseConfirmBox(true)
+      toast.success("Employee deleted successfully.")
+     }catch(err){
+      console.log(err)
+      toast.error(err?.message)
+     }finally{
+      setLoader(false)
+     }
+  }
+
+  const handleDownloadExcel = async () =>{
+    try{
+      const data = await exportEmployee()
+
+      const url = window.URL.createObjectURL(
+        new Blob([data])
+      );
+      
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "employee.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+  
+      window.URL.revokeObjectURL(url);
+
+    }catch(err){
+      console.log(err?.message)
+      toast.error(err?.message)
+    }
+  }
+
   return (
     <div className='flex w-full h-full flex-col gap-8'>
       {openForm && <EmployeeForm selectedEmployee={selectedEmployee} onClose={handleCloseForm}></EmployeeForm>}
-      <Breadcrumb selectedBranch={selectedBranch} setSelectedBranch={setSelectedBranch} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onClick={()=>handleOpenForm(null)}></Breadcrumb>
+      <Breadcrumb downloadExcel={handleDownloadExcel} selectedBranch={selectedBranch} setSelectedBranch={setSelectedBranch} searchQuery={searchQuery} setSearchQuery={setSearchQuery} onClick={()=>handleOpenForm(null)}></Breadcrumb>
       <EmployeeAdvanceSalary openForm={openAdvanceSalaryForm} onClose={handleCloseAdvanceSalaryForm} employee={selectedEmployee}></EmployeeAdvanceSalary>
+      {openConfirmation && <ConfirmPopUp onAction={handleDeleteEmployee} buttonText={"Delete"} confirmText={"Are you sure to want to delete employee?"} loading={loader} onClose={handleCloseConfirmBox} ></ConfirmPopUp>}
 
       <div className='h-full ag-theme-alpine w-full'>
         <Box 

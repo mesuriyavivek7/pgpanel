@@ -1,4 +1,4 @@
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, FileDown } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { getAllBranch } from "../services/branchService";
@@ -11,6 +11,7 @@ function Breadcrumb({
   selectedTransactions,
   setSelectedTransactions,
   onClick,
+  downloadExcel
 }) {
   const location = useLocation();
   const [branch, setBranch] = useState([]);
@@ -88,6 +89,7 @@ function Breadcrumb({
                   placeholder="Search customers"
                 ></input>
               </div>
+              <div className="flex gap-2 items-center flex-row w-full">
               <select
                 onChange={(e) => setSelectedBranch(e.target.value)}
                 value={selectedBranch}
@@ -100,13 +102,19 @@ function Breadcrumb({
                   </option>
                 ))}
               </select>
-              <button
+               <button
                 onClick={() => onClick()}
-                className="p-1.5 md:p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-2xl text-white flex-shrink-0"
-              >
-                <span className="hidden md:block">Add New Customer</span>
+                className="p-1.5 flex items-center gap-2 md:p-2 bg-blue-500 transition-all duration-300 hover:bg-blue-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white flex-shrink-0"
+               >
                 <Plus className="block md:hidden w-5 h-5"></Plus>
-              </button>
+                <span className="md:block hidden">Add New Customer</span>
+               </button>
+               <button
+               onClick={downloadExcel}
+               className="p-1.5 bg-green-500 md:p-2 transition-all duration-300 hover:bg-green-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white flex-shrink-0">
+                 <FileDown></FileDown>
+               </button>
+              </div>
             </div>
           </div>
         );
@@ -127,6 +135,7 @@ function Breadcrumb({
                   placeholder="Search employees"
                 ></input>
               </div>
+              <div className="flex flex-row w-full items-center gap-2">
               <select
                 onChange={(e) => setSelectedBranch(e.target.value)}
                 value={selectedBranch}
@@ -146,6 +155,12 @@ function Breadcrumb({
                 <span className="hidden md:block">Add New Employee</span>
                 <Plus className="block md:hidden w-5 h-5"></Plus>
               </button>
+              <button
+               onClick={downloadExcel}
+               className="p-1.5 bg-green-500 md:p-2 transition-all duration-300 hover:bg-green-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white flex-shrink-0">
+                 <FileDown></FileDown>
+              </button>
+              </div>
             </div>
           </div>
         );
@@ -388,6 +403,7 @@ function Breadcrumb({
                   </option>
                 ))}
               </select>
+             <div className="flex flex-row w-full items-center gap-2">
               <select
                 value={selectedTransactions}
                 onChange={(e) => setSelectedTransactions(e.target.value)}
@@ -400,6 +416,12 @@ function Breadcrumb({
                 <option value={"inventory_purchase"}>Inventory</option>
                 <option value={"cash_given"}>Cashout</option>
               </select>
+              <button
+               onClick={downloadExcel}
+               className="p-1.5 bg-green-500 md:p-2 transition-all duration-300 hover:bg-green-600 font-medium cursor-pointer backdrop-blur-md rounded-md text-white flex-shrink-0">
+                 <FileDown></FileDown>
+              </button>
+              </div>
             </div>
           </div>
         );

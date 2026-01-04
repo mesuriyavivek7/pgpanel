@@ -51,8 +51,8 @@ const customerSchema = new mongoose.Schema({
     ref: 'Branch'
   },
   status:{
-    type:Boolean,
-    default:true
+    type:String,
+    default:"Active",
   },
   joining_date: {
     type: Date,

@@ -12,6 +12,8 @@ import RENTATTEMPT from "../models/RENTATTEMPT.js";
 import SALARYATTEMPT from "../models/SALARYATTEMPT.js";
 import DEPOSITEAMOUNT from "../models/DEPOSITEAMOUNT.js";
 import BANKACCOUNT from "../models/BANKACCOUNT.js";
+import ExcelJS from 'exceljs'
+import { formateTransactionType } from "../helper.js";
 
 export const createTransactionForCustomerRent = async (req, res, next) =>{
    try{
@@ -49,49 +51,53 @@ export const createTransactionForCustomerRent = async (req, res, next) =>{
         customerRent.isDeposite = true
         customerRent.status = 'Paid'
 
-        const defaultBankAccount = await BANKACCOUNT.findOne({is_default:true})
+      //   const defaultBankAccount = await BANKACCOUNT.findOne({is_default:true})
 
         existCustomer.in_notice_period = true 
 
-        //Withdraw the deposite amount from customer deposite balance
-        const depositeAmount = new DEPOSITEAMOUNT({
-            customer,
-            amount: existCustomer.deposite_amount
-        })
+      //Withdraw the deposite amount from customer deposite balance
+      //   const depositeAmount = new DEPOSITEAMOUNT({
+      //       customer,
+      //       customerSnapshot:{
+      //          name: existCustomer.customer_name,
+      //          mobile: existCustomer.mobile_no
+      //       },
+      //       amount: existCustomer.deposite_amount
+      //   })
 
-        const depositeTransaction = new TRANSACTION({
-            transactionType:'withdrawal',
-            type:'deposite',
-            refModel:'Depositeamount',
-            refId:depositeAmount._id,
-            payment_mode:'cash',
-            branch:existCustomer.branch,
-            bank_account:defaultBankAccount._id
-        })
+      //   const depositeTransaction = new TRANSACTION({
+      //       transactionType:'withdrawal',
+      //       type:'deposite',
+      //       refModel:'Depositeamount',
+      //       refId:depositeAmount._id,
+      //       payment_mode:'cash',
+      //       branch:existCustomer.branch,
+      //       bank_account:defaultBankAccount._id
+      //   })
 
         //Add deposite amount into customer rent amount
-        const rentAttempt = new RENTATTEMPT({
-           customer,
-           amount: existCustomer.deposite_amount,
-           month,
-           year
-        })
+      //   const rentAttempt = new RENTATTEMPT({
+      //      customer,
+      //      amount: existCustomer.deposite_amount,
+      //      month,
+      //      year
+      //   })
 
-        const rentTransaction = new TRANSACTION({
-          transactionType:'income',
-          type:'rent_attempt',
-          refModel:'Rentattempt',
-          refId:rentAttempt._id,
-          payment_mode:'cash',
-          branch:existCustomer.branch,
-          bank_account:defaultBankAccount._id
-        })
+      //   const rentTransaction = new TRANSACTION({
+      //     transactionType:'income',
+      //     type:'rent_attempt',
+      //     refModel:'Rentattempt',
+      //     refId:rentAttempt._id,
+      //     payment_mode:'cash',
+      //     branch:existCustomer.branch,
+      //     bank_account:defaultBankAccount._id
+      //   })
 
         await customerRent.save()
-        await depositeAmount.save()
-        await depositeTransaction.save()
-        await rentAttempt.save()
-        await rentTransaction.save()
+      //   await depositeAmount.save()
+      //   await depositeTransaction.save()
+      //   await rentAttempt.save()
+      //   await rentTransaction.save()
         await existCustomer.save()
 
 
@@ -600,6 +606,76 @@ export const getAllTransactions = async (req, res, next) =>{
       populate('bank_account')
 
       return res.status(200).json({message:"All transaction retrived successfully.",success:true,data:transactions})
+
+   }catch(err){
+      next(err)
+   }
+}
+
+export const exportExcelTransactions = async (req, res, next) =>{
+   try{
+      const {mongoid, userType} = req 
+
+      let filter = {} 
+
+      if(userType === "Account"){      
+         const account = await ACCOUNT.findById(mongoid)
+
+         if(!account) return res.status(404).json({message:"Account manager not found.",success:false})
+
+         filter.branch = {$in:account.branch}
+      }
+
+      const transactions = await TRANSACTION.find(filter)
+      .populate("refId", "amount")
+      .populate("branch", "branch_name")
+      .populate("bank_account", "account_holdername")
+
+      
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Transactions");
+
+    worksheet.columns = [
+      { header: "Type", key: "type", width: 20 },
+      { header: "Credit", key: "credit", width: 15 },
+      { header: "Debit", key: "debit", width: 15 },
+      { header: "Payment Mode", key: "payment_mode", width: 15 },
+      { header: "Bank Account", key: "bank_account", width: 25 },
+      { header: "Branch", key: "branch", width: 20 },
+      { header: "Created At", key: "createdAt", width: 18 },
+    ];
+
+    transactions.forEach((txn) => {
+      const isCredit =
+        txn.transactionType === "income" ||
+        txn.transactionType === "deposite";
+
+      worksheet.addRow({
+        type: formateTransactionType(txn.type),
+        credit: isCredit ? txn.refId.amount : "",
+        debit: !isCredit ? txn.refId.amount : "",
+        payment_mode: txn.payment_mode,
+        bank_account: txn.bank_account.account_holdername,
+        branch: txn.branch?.branch_name || "-",
+        createdAt: txn.createdAt
+          ? txn.createdAt.toISOString().split("T")[0]
+          : "-",
+      });
+    });
+
+    worksheet.getRow(1).font = { bold: true };
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=transactions.xlsx"
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
 
    }catch(err){
       next(err)

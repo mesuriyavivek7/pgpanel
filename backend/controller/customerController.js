@@ -6,6 +6,7 @@ import ACCOUNT from "../models/ACCOUNT.js";
 import DEPOSITEAMOUNT from "../models/DEPOSITEAMOUNT.js";
 import CUSTOMERRENT from "../models/CUSTOMERRENT.js";
 import mongoose from "mongoose";
+import ExcelJS from "exceljs";
 
 export const createCustomer = async (req, res, next) => {
     try {
@@ -147,7 +148,9 @@ export const getAllCustomer = async (req, res, next) => {
       const { mongoid, userType } = req;
       const { searchQuery, branch, room } = req.query;
   
-      const filter = {};
+      const filter = {
+        status: {$in: ["Active", "Inactive"]}
+      };
   
       // If user is Account type, restrict their access to allowed branches
       if (userType === "Account") {
@@ -231,7 +234,9 @@ export const getCustomerByRoomId = async (req, res, next) => {
 
         const { searchQuery } = req.query
 
-        const filter = {}
+        const filter = {
+          status: {$in: ["Active", "Inactive"]}
+        };
 
         if (searchQuery) filter.customer_name = searchQuery
         filter.room = roomId
@@ -266,7 +271,9 @@ export const getCustomerByBranchId = async (req, res, next) => {
         }
 
         const { searchQuery } = req.query
-        const filter = {}
+        const filter = {
+          status: {$in: ["Active", "Inactive"]}
+        };
 
         if (searchQuery) filter.customer_name = searchQuery
         filter.branch = branchId
@@ -494,7 +501,7 @@ export const changeStatus = async (req, res, next) => {
 
         const { status } = req.body
 
-        if (!customerId || status === undefined) return res.status(400).json({ message: "Please provide customer id and status", success: false })
+        if (!customerId || !status) return res.status(400).json({ message: "Please provide customer id and status", success: false })
 
         const customer = await CUSTOMER.findById(customerId)
 
@@ -512,7 +519,7 @@ export const changeStatus = async (req, res, next) => {
     
         if (!room) return res.status(200).json({ message: "Customer room is missing.", success: false })
 
-        if(status){
+        if(status==="Active"){
            if(!customer.customer_replaced){
             if(room.filled >= room.capacity){
                 return res.status(400).json({ message: "Room is already full. Cannot activate customer.", success: false })
@@ -656,7 +663,7 @@ export const getPendingCustomerRentList = async (req, res, next) =>{
 
         const {mongoid, userType} = req 
         let filter = {
-            status: true 
+            status: "Active" 
         }
 
         if(searchQuery){
@@ -723,3 +730,103 @@ export const getPendingCustomerRentList = async (req, res, next) =>{
         next(err)
     }
 }
+
+export const deleteCustomer = async (req, res, next) =>{
+   try{
+    const {customerId} = req.params 
+
+    if(!customerId) return res.status(400).json({message:"Customer id is required.", success: false})
+
+    const customer = await CUSTOMER.findById(customerId) 
+
+    if(!customer) return res.status(400).json({message:"Customer is not found.", success: false})
+
+    await CUSTOMER.findByIdAndUpdate(customerId, {status: 'Deleted'})
+
+    return res.status(200).json({message:"Customer account is deleted successfully.",success: true})
+
+   }catch(err){
+    next(err)
+   }
+}
+
+export const exportCustomerToExcel = async (req, res, next) =>{
+  try{
+    const {mongoid, userType} = req 
+    
+    const filter = {
+      status: {$in: ["Active", "Inactive"]}
+    };
+
+    // If user is Account type, restrict their access to allowed branches
+    if (userType === "Account") {
+      const account = await ACCOUNT.findById(mongoid);
+
+      if (!account) {
+        return res
+          .status(404)
+          .json({ message: "Account not found.", success: false });
+      }
+
+      filter.branch = {$in:account.branch}
+    }
+    
+    const customers = await CUSTOMER.find(filter)
+    .populate("room", "room_id")
+    .populate("branch", "branch_name")
+    .lean()
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Customers");
+
+    // Define columns
+    worksheet.columns = [
+      { header: "Customer Name", key: "customer_name", width: 20 },
+      { header: "Mobile No", key: "mobile_no", width: 15 },
+      { header: "Deposit Amount", key: "deposite_amount", width: 15 },
+      { header: "Paid Deposit", key: "paid_deposite_amount", width: 15 },
+      { header: "Deposit Status", key: "deposite_status", width: 15 },
+      { header: "Rent Amount", key: "rent_amount", width: 15 },
+      { header: "Room", key: "room", width: 15 },
+      { header: "Branch", key: "branch", width: 20 },
+      { header: "Status", key: "status", width: 12 },
+      { header: "Joining Date", key: "joining_date", width: 18 },
+      { header: "Notice Period", key: "in_notice_period", width: 15 },
+    ];
+
+    // Add rows
+    customers.forEach((c) => {
+      worksheet.addRow({
+        customer_name: c.customer_name,
+        mobile_no: c.mobile_no,
+        deposite_amount: c.deposite_amount,
+        paid_deposite_amount: c.paid_deposite_amount,
+        deposite_status: c.deposite_status,
+        rent_amount: c.rent_amount,
+        room: c.room?.room_id || "-",
+        branch: c.branch?.branch_name || "-",
+        status: c.status,
+        joining_date: c.joining_date?.toISOString().split("T")[0],
+        in_notice_period: c.in_notice_period ? "Yes" : "No",
+      });
+    });
+
+    // Header styling
+    worksheet.getRow(1).font = { bold: true };
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=customers.xlsx"
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
+
+  }catch(err){
+    next(err)
+  }
+} 

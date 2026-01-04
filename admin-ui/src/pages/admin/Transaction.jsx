@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from 'react'
 
-
 import Breadcrumb from '../../components/Breadcrumb';
 import { useTransactionTable } from '../../hooks/useTransactionTable';
+import { exportTransaction } from '../../services/transactionService';
+import { toast } from 'react-toastify';
 
 import { DataGrid } from '@mui/x-data-grid';
 import Box from '@mui/material/Box';
@@ -16,6 +17,30 @@ function Transaction() {
   useEffect(()=>{
      refetch(selectedBranch, selectedTransactions)
   },[selectedBranch,selectedTransactions])
+
+  const handleDownloadExcel = async () =>{
+    try{
+      const data = await exportTransaction()
+
+      const url = window.URL.createObjectURL(
+        new Blob([data])
+      );
+      
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "transaction.xlsx";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+  
+      window.URL.revokeObjectURL(url);
+
+    }catch(err){
+      console.log(err?.message)
+      toast.error(err?.message)
+    }
+  }
+
   return (
     <div className='w-full h-full flex flex-col gap-8'>
         <Breadcrumb
@@ -23,6 +48,7 @@ function Transaction() {
          setSelectedBranch={setSelectedBranch}
          selectedTransactions={selectedTransactions}
          setSelectedTransactions={setSelectedTransactions}
+         downloadExcel={handleDownloadExcel}
         ></Breadcrumb>
         <div className='h-full ag-theme-alpine w-full'>
         <Box 

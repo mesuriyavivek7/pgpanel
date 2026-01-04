@@ -69,17 +69,31 @@ export const useTransactionTable = () =>{
         ),
        },
        {
-        headerName: 'Amount',
-        field: 'refId',
+        headerName: 'Credit',
+        field: 'credit',
         minWidth: 200,
         flex: 1,
         renderCell: (params) => (
           <div className="flex items-center w-full h-full">
             <div className="flex items-center gap-2">
-             <span className={`${(params.row.transactionType === "expense" || params.row.transactionType==="withdrawal") ? "text-red-500" : "text-green-500"}`}>{(params.row.transactionType === "expense" ||params.row.transactionType==="withdrawal") ? "-" : "+"} ₹{params.value.amount}</span>
+             {/* <span className={`${(params.row.transactionType === "expense" || params.row.transactionType==="withdrawal") ? "text-red-500" : "text-green-500"}`}>{(params.row.transactionType === "expense" ||params.row.transactionType==="withdrawal") ? "-" : "+"} ₹{params.value.amount}</span> */}
+             <span className={`${(params.row.transactionType === "income" || params.row.transactionType === "deposite") && "text-green-500"}`}>{(params.row.transactionType === "income" || params.row.transactionType === "deposite") ? <span>+{params.row.refId.amount}</span> : '-' }</span>
             </div>
           </div>
         ),
+        },
+        {
+         headerName: 'Debit',
+         field: 'debit',
+         minWidth: 200,
+         flex: 1,
+         renderCell: (params) => (
+           <div className="flex items-center w-full h-full">
+             <div className="flex items-center gap-2">
+              <span className={`${(params.row.transactionType === "expense" || params.row.transactionType === "withdrawal") && "text-red-500"}`}>{(params.row.transactionType === "expense" || params.row.transactionType === "withdrawal") ? <span>-{params.row.refId.amount}</span> : '-' }</span>
+             </div>
+           </div>
+         ),
         },
         {
             headerName: "Payment Mode",

@@ -197,6 +197,8 @@ export const deleteBankAccount = async (req, res, next) =>{
                 if(anotherAccount){
                     anotherAccount.is_default = true
                     await anotherAccount.save()
+                }else {
+                    return res.status(400).json({message:"You can't delete account if there is only one account."})
                 }
             }
             bankAccount.status = 'deleted'
@@ -205,7 +207,7 @@ export const deleteBankAccount = async (req, res, next) =>{
             return res.status(200).json({message:"Your account is deleted successfully.",status:true})
 
         }else{
-            return res.status(200).json({message:"You can't delete your account. first of all you need to reset your account.",status:false})
+            return res.status(400).json({message:"You can't delete your account. first of all you need to reset your account.",status:false})
         }
     }catch(err){
         next(err)

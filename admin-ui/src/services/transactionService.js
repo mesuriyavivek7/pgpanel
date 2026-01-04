@@ -101,6 +101,7 @@ export const createTransactionForCashout = async (transactionData) => {
 export const getAllTransactions = async (branch="",transactionType="") =>{
    try{
       const response = await api.get(`/transaction?branch=${branch}&transactionType=${transactionType}`)
+      console.log(response.data.data)
       return response.data.data
    }catch(err){
       console.log(err)
@@ -109,3 +110,16 @@ export const getAllTransactions = async (branch="",transactionType="") =>{
    }
 }
 
+//For export all transaction in excel 
+export const exportTransaction = async () =>{
+   try{
+      const response = await api.get('/transaction/export/excel', {
+         responseType:"blob"
+      })
+      return response.data
+   }catch(err){
+      console.log(err)
+      const errMessage = err?.response?.data?.message || "Something went wrong."
+      throw new Error(errMessage)
+   }
+}

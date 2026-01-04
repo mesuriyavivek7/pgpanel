@@ -5,7 +5,7 @@ import ACCOUNT from "../models/ACCOUNT.js";
 import BRANCH from "../models/BRANCH.js";
 import LOGINMAPPING from "../models/LOGINMAPPING.js";
 import EMPLOYEESALARY from "../models/EMPLOYEESALARY.js";
-
+import ExcelJS from "exceljs";
 
 
 export const createEmployee = async (req, res, next) => {
@@ -62,7 +62,9 @@ export const getAllEmployee = async (req, res, next) => {
     try {
         const { searchQuery, branch } = req.query;
 
-        const filter = {};
+        const filter = {
+            status: {$in: ["Active", "Inactive"]}
+        };
 
         const { userType, mongoid } = req
 
@@ -198,7 +200,7 @@ export const changeEmployeeStatus = async (req, res, next) => {
 
         const { status } = req.body
 
-        if (!employeeId || status === undefined) return res.status(400).json({ message: "Please provide all required fields.", success: false })
+        if (!employeeId || !status) return res.status(400).json({ message: "Please provide all required fields.", success: false })
 
         const employee = await EMPLOYEE.findById(employeeId)
 
@@ -353,8 +355,10 @@ export const getEmployeePendingSalaries = async (req, res, next) =>{
 
       const {mongoid, userType} = req 
 
-      let filter = {status: true}
-
+      const filter = {
+        status: "Active"
+      };
+  
       if (searchQuery) {
         filter.employee_name = { $regex: searchQuery, $options: 'i' };
       }
@@ -417,3 +421,101 @@ export const getEmployeePendingSalaries = async (req, res, next) =>{
       next(err)
     }
 }
+
+export const deleteEmployee = async (req, res, next) =>{
+    try{
+        const {employeeId} = req.params 
+
+        if(!employeeId) return res.status(400).json({message:"Employee id is not provided.",success:false})
+
+        const employee = await EMPLOYEE.findById(employeeId) 
+
+        if(!employee) return res.status(400).json({message:"Employee not found.",success:false}) 
+
+        await EMPLOYEE.findByIdAndUpdate(employeeId, {
+           status: 'Deleted'
+        })
+
+        return res.status(200).json({message:"Employee deleted successfully.",success:true})
+
+    }catch(err){
+        next(err)
+    }
+}
+
+export const exportEmployeeExcel = async (req, res, next) =>{
+    try{
+        const {mongoid, userType} = req 
+    
+        const filter = {
+          status: {$in: ["Active", "Inactive"]}
+        };
+    
+        // If user is Account type, restrict their access to allowed branches
+        if (userType === "Account") {
+          const account = await ACCOUNT.findById(mongoid);
+    
+          if (!account) {
+            return res
+              .status(404)
+              .json({ message: "Account not found.", success: false });
+          }
+    
+          filter.branch = {$in:account.branch}
+        }
+
+        const employees = await EMPLOYEE.find(filter)
+        .populate("branch", "branch_name")
+        .lean() 
+
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Employees");
+    
+        // Excel columns
+        worksheet.columns = [
+          { header: "Employee Name", key: "employee_name", width: 20 },
+          { header: "Mobile No", key: "mobile_no", width: 15 },
+          { header: "Salary", key: "salary", width: 15 },
+          { header: "Employee Type", key: "employee_type", width: 15 },
+          { header: "Branch", key: "branch", width: 20 },
+          { header: "Status", key: "status", width: 12 },
+          { header: "Added By Type", key: "added_by_type", width: 15 },
+          { header: "Created At", key: "createdAt", width: 18 },
+        ];
+    
+        // Add data rows
+        employees.forEach((emp) => {
+          worksheet.addRow({
+            employee_name: emp.employee_name,
+            mobile_no: emp.mobile_no,
+            salary: emp.salary,
+            employee_type: emp.employee_type,
+            branch: emp.branch?.branch_name || "-",
+            status: emp.status,
+            added_by_type: emp.added_by_type,
+            createdAt: emp.createdAt
+              ? emp.createdAt.toISOString().split("T")[0]
+              : "-",
+          });
+        });
+    
+        // Make header bold
+        worksheet.getRow(1).font = { bold: true };
+    
+        // Send file
+        res.setHeader(
+          "Content-Type",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+        res.setHeader(
+          "Content-Disposition",
+          "attachment; filename=employees.xlsx"
+        );
+    
+        await workbook.xlsx.write(res);
+        res.end();
+
+    }catch(err){
+        next(err)
+    }
+} 

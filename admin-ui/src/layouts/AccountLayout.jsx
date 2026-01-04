@@ -11,7 +11,7 @@ function AccountLayout() {
         <SideBar showSideBar={showSideBar} setShowSideBar={setShowSideBar} type='account'></SideBar>
         <main className="flex relative overflow-y-auto w-full flex-col ml-0 md:ml-64 h-full">
             <Header setShowSideBar={setShowSideBar}></Header>
-            <div className="p-6 mt-16 w-full overflow-y-auto flex-1 bg-[#F9FAFB]">
+            <div className="md:p-6 p-2 mt-16 w-full overflow-y-auto flex-1 bg-[#F9FAFB]">
               <Outlet></Outlet>
             </div>
         </main>

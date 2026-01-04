@@ -16,12 +16,12 @@ import { formatDate } from "../helper";
 import { capitalise } from "../helper";
 
 //Importing icons
-import { UserPen, Wallet } from 'lucide-react';
+import { Trash, UserPen, Wallet } from 'lucide-react';
 import { Minus } from 'lucide-react';
 import { Check } from 'lucide-react';
 import { changeEmployeeStatus, getAllEmployee } from "../services/employeeService";
 
-export const useEmployeeTable = (handleOpenForm, handleOpenAdvanceRentForm) => {
+export const useEmployeeTable = (handleOpenForm, handleOpenAdvanceRentForm, handleOpenConfirmBox) => {
     const [rows, setRows] = useState([])
     const [loading, setLoading] = useState(false)
    
@@ -68,8 +68,14 @@ export const useEmployeeTable = (handleOpenForm, handleOpenAdvanceRentForm) => {
            showInMenu
            ></GridActionsCellItem>,
            <GridActionsCellItem
+           icon={<Trash></Trash>}
+           label="Delete"
+           onClick={()=>handleOpenConfirmBox(data.row)}
+           showInMenu
+           ></GridActionsCellItem>,
+           <GridActionsCellItem
            icon={data.row.status?<Minus size={22}></Minus>:<Check size={22}></Check>}
-           label={data.row.status? "Deactivate" : "Activate"}
+           label={data.row.status === "Active" ? "Deactivate" : "Activate"}
            onClick={()=>handleChangeEmployeeStatus(data.row._id, !data.row.status)}
            showInMenu
            ></GridActionsCellItem>, 
@@ -145,11 +151,11 @@ export const useEmployeeTable = (handleOpenForm, handleOpenAdvanceRentForm) => {
           minWidth: 140,
           flex: 1,
           renderCell: (params) => {
-            const isActive = params.value;
+            const isActive = params.value === "Active";
             return (
               <div className="flex items-center w-full h-full">
                 <span className={`px-3 py-1 leading-5 flex justify-center items-center rounded-full w-20 text-white font-medium ${isActive===true ? 'bg-green-500' : 'bg-yellow-500'}`}>
-                  {params.value === true ? "Active" : "Inactive"}
+                  {params.value === "Active" ? "Active" : "Inactive"}
                 </span>
               </div>
             );

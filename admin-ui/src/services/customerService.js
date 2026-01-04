@@ -84,3 +84,30 @@ export const getCustomerPendingRents = async (searchQuery="", branch="") =>{
         throw new Error(errMessage)
     }
 }
+
+//For delete customer 
+export const deleteCustomer = async (customerId) =>{
+    try{
+        const response = await api.delete(`/customer/${customerId}`)
+        return response.data.data
+    }catch(err){
+        console.log(err)
+        const errMessage = err?.response?.data?.message || "Something went wrong."
+        throw new Error(errMessage)
+    }
+}
+
+//For export customer data in excel 
+export const exportCustomer = async () =>{
+    try{
+        const response = await api.get("/customer/export/excel",
+        {
+            responseType:"blob"
+        })
+        return response.data
+    }catch(err){
+        console.log(err)
+        const errMessage = err?.response?.data?.message || "Something went wrong."
+        throw new Error(errMessage)
+    }
+}

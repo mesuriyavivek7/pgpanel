@@ -18,13 +18,13 @@ import { formatDate } from "../helper";
 import { capitalise } from "../helper";
 
 //Importing icons
-import { UserPen, BadgeIndianRupee, UserRoundPlus } from 'lucide-react';
+import { UserPen, BadgeIndianRupee, UserRoundPlus, Trash } from 'lucide-react';
 import { Minus } from 'lucide-react';
 import { Check } from 'lucide-react';
 import { Coins } from 'lucide-react';
 
 
-export const useCustomerTable = (handleOpenForm, room, handleOpenDepositeForm, handleOpenAdvanceRentForm, handleOpenAdvanceBookingForm) =>{
+export const useCustomerTable = (handleOpenForm, room, handleOpenDepositeForm, handleOpenAdvanceRentForm, handleOpenAdvanceBookingForm, handleOpenConfirmBox) =>{
     const [rows,setRows] = useState([])
     const [loading , setLoading] = useState(false)
     const navigate = useNavigate()
@@ -73,9 +73,15 @@ export const useCustomerTable = (handleOpenForm, room, handleOpenDepositeForm, h
            showInMenu
            ></GridActionsCellItem>,
            <GridActionsCellItem
+           icon={<Trash></Trash>}
+           label="Delete"
+           onClick={()=>handleOpenConfirmBox(data.row)}
+           showInMenu
+           ></GridActionsCellItem>,
+           <GridActionsCellItem
            icon={data.row.status ? <Minus size={22}></Minus>:<Check size={22}></Check>}
-           label={data.row.status ? "Deactivate" : "Activate"}
-           onClick={()=>handleChangeCustomerStatus(data.row._id, !data.row.status)}
+           label={data.row.status === "Active" ? "Deactivate" : "Activate"}
+           onClick={()=>handleChangeCustomerStatus(data.row._id, data.row.status === "Active" ? "Inactive" : "Active")}
            showInMenu
            ></GridActionsCellItem>, 
            <GridActionsCellItem
@@ -175,11 +181,11 @@ export const useCustomerTable = (handleOpenForm, room, handleOpenDepositeForm, h
             minWidth: 140,
             flex: 1,
             renderCell: (params) => {
-              const isActive = params.value;
+              const isActive = params.value === "Active";
               return (
                 <div className="flex items-center w-full h-full">
                   <span className={`px-3 py-1 leading-5 flex justify-center items-center rounded-full w-20 text-white font-medium ${isActive===true ? 'bg-green-500' : 'bg-yellow-500'}`}>
-                    {params.value === true ? "Active" : "Inactive"}
+                    {params.value === "Active" ? "Active" : "Inactive"}
                   </span>
                 </div>
               );

@@ -50,3 +50,20 @@ export const getMonthShortNames = (monthNumber) =>{
     ];
     return monthNames[monthNumber - 1];
 }
+
+export const formateTransactionType = (type) => {
+   switch(type){
+      case "deposite":
+        return "Deposite"
+      case "rent_attempt":
+        return "Rent"
+      case "salary_attempt":
+        return "Salary"
+      case "monthly_bill":
+        return "Monthly Bill"
+      case "inventory_purchase":
+        return "Inventory"
+      case "cash_given":
+        return "Cash Given"
+   }
+}

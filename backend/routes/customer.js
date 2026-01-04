@@ -1,7 +1,7 @@
 import express from 'express'
 import { verifyToken, verifyAdmin } from '../middleware/verifyUser.js'
 import {
-    changeStatus, createCustomer, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId,
+    changeStatus, createCustomer, deleteCustomer, exportCustomerToExcel, getAllCustomer, getCustomerByBranchId, getCustomerByRoomId,
     getPendingCustomerRentList, updateCustomerDetails,
 } from '../controller/customerController.js'
 
@@ -28,5 +28,10 @@ app.put('/status/:customerId', verifyToken, changeStatus)
 //For get pending customer rents
 app.get('/pending-rent', verifyToken, getPendingCustomerRentList)
 
+//For delete customer 
+app.delete('/:customerId', verifyToken, deleteCustomer)
+
+//For export data in excel 
+app.get('/export/excel', verifyToken, exportCustomerToExcel)
 
 export default app

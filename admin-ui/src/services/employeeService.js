@@ -58,3 +58,30 @@ export const getEmployeeSalary = async (searchQuery="", branch="") =>{
         throw new Error(errMessage)
     }
 }
+
+//For delete employee 
+export const deleteEmployee = async (employeeId) => {
+    try{
+        const response = await api.delete(`/employee/${employeeId}`)
+        return response.data.data
+    }catch(err){
+        console.log(err)
+        const errMessage = err?.response?.data?.message || "Something went wrong."
+        throw new Error(errMessage)
+    }
+}
+
+//For export employee data 
+export const exportEmployee = async () =>{
+    try{
+        const response = await api.get('/employee/export/excel', {
+            responseType:"blob"
+        })
+        console.log('Employee--->', response)
+        return response.data
+    }catch(err){
+        console.log(err)
+        const errMessage = err?.response?.data?.message || "Something went wrong."
+        throw new Error(errMessage)
+    }
+}

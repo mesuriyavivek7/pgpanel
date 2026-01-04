@@ -23,8 +23,8 @@ const employeeSchema = new mongoose.Schema({
         enum:['Cook','Co-Worker']
     },
     status:{
-       type:Boolean,
-       default:true
+       type:String,
+       default:"Active"
     },
     branch:{
         type:mongoose.Schema.Types.ObjectId,

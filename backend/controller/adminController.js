@@ -11,120 +11,143 @@ import LOGINMAPPING from "../models/LOGINMAPPING.js";
 import bcryptjs from "bcryptjs";
 import ROOM from "../models/ROOM.js";
 import CUSTOMERRENT from "../models/CUSTOMERRENT.js";
+import RESETACCOUNT from "../models/RESETACCOUNT.js";
+import { buildResetMap } from "../helper.js";
 
 export const getDashboardSummery = async (req, res, next) => {
   try {
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1; // 1–12
+    const currentMonth = currentDate.getMonth() + 1;
 
-    const totalEmployees = await EMPLOYEE.find({
-      status: true,
-    }).countDocuments();
-    const totalCustomers = await CUSTOMER.find({
-      status: true,
-    }).countDocuments();
-    const totalBranch = await BRANCH.find().countDocuments();
-    const totalAcManagers = await LOGINMAPPING.find({
-      status: true,
-      userType: "Account",
-    }).countDocuments();
-    const vacantSeats = await ROOM.aggregate([
+    /* ---------- BASIC COUNTS ---------- */
+    const [
+      totalEmployees,
+      totalCustomers,
+      totalBranch,
+      totalAcManagers,
+      pendingRents,
+      resets
+    ] = await Promise.all([
+      EMPLOYEE.countDocuments({ status: true }),
+      CUSTOMER.countDocuments({ status: true }),
+      BRANCH.countDocuments(),
+      LOGINMAPPING.countDocuments({ status: true, userType: "Account" }),
+      CUSTOMERRENT.countDocuments({ status: "Pending" }),
+      RESETACCOUNT.find()
+    ]);
+
+    /* ---------- VACANT SEATS ---------- */
+    const vacantSeatsAgg = await ROOM.aggregate([
       {
         $group: {
           _id: null,
-          totalVacant: { $sum: { $subtract: ["$capacity", "$filled"] } },
-        },
-      },
-    ]);
-    const pendingRents = await CUSTOMERRENT.find({
-      status: "Pending",
-    }).countDocuments();
-
-    const transactions = await TRANSACTION.find({
-      transactionType: { $in: ['expense', 'income'] }
-    }).populate("refId")
-      .populate("bank_account")
-      .populate("branch");
-
-    const depositeTransactions = await TRANSACTION.find({
-      transactionType: {$in: ['deposite', 'withdrawal']}
-    }).populate("refId")
-      .populate("bank_account")
-      .populate("branch");
-
-    let totalDepositeAmount = 0  
-
-    depositeTransactions.forEach((tx)=>{
-
-      if(tx.transactionType === 'deposite'){
-        totalDepositeAmount += tx.refId.amount;
-      }else{
-        totalDepositeAmount -= tx.refId.amount;
+          totalVacant: { $sum: { $subtract: ["$capacity", "$filled"] } }
+        }
       }
+    ]);
 
+    const vacantSeats = vacantSeatsAgg.length ? vacantSeatsAgg[0].totalVacant : 0;
+
+    /* ---------- RESET MAP ---------- */
+    const resetMap = buildResetMap(resets);
+
+    /* ---------- TRANSACTIONS ---------- */
+    let transactions = await TRANSACTION.find({
+      transactionType: { $in: ["income", "expense"] }
     })
+      .populate("refId")
+      .populate("bank_account")
+      .populate("branch");
 
+    let depositeTransactions = await TRANSACTION.find({
+      transactionType: { $in: ["deposite", "withdrawal"] }
+    })
+      .populate("refId")
+      .populate("bank_account");
+
+    /* ---------- APPLY RESET FILTER ---------- */
+    const applyResetFilter = (txList) =>
+      txList.filter(tx => {
+        if (!tx.bank_account) return true;
+        const resetDate = resetMap[tx.bank_account._id.toString()];
+        if (!resetDate) return true;
+        return new Date(tx.createdAt) > resetDate;
+      });
+
+    transactions = applyResetFilter(transactions);
+    depositeTransactions = depositeTransactions;
+
+    /* ---------- DEPOSIT TOTAL ---------- */
+    let totalDepositeAmount = 0;
+    depositeTransactions.forEach(tx => {
+      if (!tx.refId?.amount) return;
+      totalDepositeAmount +=
+        tx.transactionType === "deposite"
+          ? tx.refId.amount
+          : -tx.refId.amount;
+    });
+
+    /* ---------- MONTHLY INIT ---------- */
     let monthlyData = Array.from({ length: 12 }, (_, i) => ({
       month: getMonthShortNames(i + 1),
       Profit: 0,
-      Expenditure: 0,
+      Expenditure: 0
     }));
 
     let yearlyMap = {};
+    let branchMap = {};
     let totalMonthlyProfit = 0;
     let totalMonthlyExpenditure = 0;
     let totalCurrentYearProfit = 0;
     let totalCurrentYearExpenditure = 0;
 
-    let branchMap = {};
+    /* ---------- PROCESS TRANSACTIONS ---------- */
+    transactions.forEach(tx => {
+      if (!tx.refId?.amount) return;
 
-    transactions.forEach((tx) => {
-      if (!tx.refId || !tx.refId.amount) return;
       const amount = tx.refId.amount;
-      const createdAt = tx.createdAt;
+      const createdAt = new Date(tx.createdAt);
       const month = createdAt.getMonth() + 1;
       const year = createdAt.getFullYear();
-      const branchId = tx.branch ? tx.branch._id.toString() : null;
+      const branchId = tx.branch?._id?.toString();
 
-      // --- GLOBAL TOTALS ---
+      // Global totals
       if (year === currentYear) {
         if (tx.transactionType === "income") {
           totalCurrentYearProfit += amount;
           if (month === currentMonth) totalMonthlyProfit += amount;
-        } else if (tx.transactionType === "expense") {
+        } else {
           totalCurrentYearExpenditure += amount;
           if (month === currentMonth) totalMonthlyExpenditure += amount;
         }
       }
 
-      // --- MONTHLY CHART DATA ---
+      // Monthly chart
       if (tx.transactionType === "income") {
         monthlyData[month - 1].Profit += amount;
-      } else if (tx.transactionType === "expense") {
+      } else {
         monthlyData[month - 1].Expenditure += amount;
       }
 
-      // --- YEARLY MAP ---
+      // Yearly chart
       if (!yearlyMap[year]) {
         yearlyMap[year] = { year, Profit: 0, Expenditure: 0 };
       }
-      if (tx.transactionType === "income") {
-        yearlyMap[year].Profit += amount;
-      } else {
-        yearlyMap[year].Expenditure += amount;
-      }
+      tx.transactionType === "income"
+        ? (yearlyMap[year].Profit += amount)
+        : (yearlyMap[year].Expenditure += amount);
 
-      // --- BRANCH-WISE CALC ---
+      // Branch-wise
       if (branchId) {
         if (!branchMap[branchId]) {
           branchMap[branchId] = {
             branchId,
-            branch_name: tx.branch?.branch_name || "",
+            branch_name: tx.branch.branch_name,
             totalMonthlyProfit: 0,
             totalMonthlyExpenditure: 0,
             totalCurrentYearProfit: 0,
-            totalCurrentYearExpenditure: 0,
+            totalCurrentYearExpenditure: 0
           };
         }
 
@@ -133,7 +156,7 @@ export const getDashboardSummery = async (req, res, next) => {
             branchMap[branchId].totalCurrentYearProfit += amount;
             if (month === currentMonth)
               branchMap[branchId].totalMonthlyProfit += amount;
-          } else if (tx.transactionType === "expense") {
+          } else {
             branchMap[branchId].totalCurrentYearExpenditure += amount;
             if (month === currentMonth)
               branchMap[branchId].totalMonthlyExpenditure += amount;
@@ -142,46 +165,44 @@ export const getDashboardSummery = async (req, res, next) => {
       }
     });
 
-    // --- YEARLY DATA FOR CHART ---
-    let yearlyData = [];
+    /* ---------- YEARLY DATA ---------- */
+    const yearlyData = [];
     for (let y = currentYear; y > currentYear - 5; y--) {
       yearlyData.push({
         year: y,
         Profit: yearlyMap[y]?.Profit || 0,
-        Expenditure: yearlyMap[y]?.Expenditure || 0,
+        Expenditure: yearlyMap[y]?.Expenditure || 0
       });
     }
 
-    // --- BRANCH ARRAY ---
-    const branchWiseData = Object.values(branchMap);
+    /* ---------- BANK ACCOUNTS ---------- */
+    const accounts = await BANKACCOUNT.find({ status: "active" });
 
-    // --- BANK ACCOUNTS ---
-    const accounts = await BANKACCOUNT.find({status:'active'});
-    const accountsData = accounts.map((acc) => {
-      const accTx = transactions.filter(
-        (t) => t.bank_account && t.bank_account._id.toString() === acc._id.toString()
+    const accountsData = accounts.map(acc => {
+      let accTx = transactions.filter(
+        t => t.bank_account?._id.toString() === acc._id.toString()
       );
 
       let balance = 0;
-      accTx.forEach((tx) => {
+      accTx.forEach(tx => {
         if (!tx.refId?.amount) return;
-        if (tx.transactionType === "income") {
-          balance += tx.refId.amount;
-        } else {
-          balance -= tx.refId.amount;
-        }
+        balance += tx.transactionType === "income"
+          ? tx.refId.amount
+          : -tx.refId.amount;
       });
 
       return {
         account_holdername: acc.account_holdername,
-        current_balance: balance,
+        current_balance: balance
       };
     });
 
     const current_balance = totalMonthlyProfit - totalMonthlyExpenditure;
 
-    // --- RESPONSE ---
+    /* ---------- RESPONSE ---------- */
     return res.status(200).json({
+      success: true,
+      message: "Dashboard summary retrieved successfully.",
       data: {
         monthlyData,
         yearlyData,
@@ -195,18 +216,17 @@ export const getDashboardSummery = async (req, res, next) => {
         totalCustomers,
         totalEmployees,
         totalAcManagers,
-        vacantSeats: vacantSeats.length > 0 ? vacantSeats[0].totalVacant : 0,
+        vacantSeats,
         pendingRents,
-        branchWiseData, 
+        branchWiseData: Object.values(branchMap),
         totalDepositeAmount
-      },
-      message: "Dashboard summary retrieved successfully.",
-      success: true,
+      }
     });
   } catch (err) {
     next(err);
   }
 };
+
 
 export const getDashboardSearch = async (req, res, next) => {
   try {

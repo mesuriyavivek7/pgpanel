@@ -67,3 +67,20 @@ export const formateTransactionType = (type) => {
         return "Cash Given"
    }
 }
+
+export const buildResetMap = (resets) => {
+  const map = {};
+
+  resets.forEach(r => {
+    r.bankaccount.forEach(accId => {
+      const key = accId.toString();
+      const resetDate = new Date(r.resetDate);
+
+      if (!map[key] || resetDate > map[key]) {
+        map[key] = resetDate;
+      }
+    });
+  });
+
+  return map;
+};

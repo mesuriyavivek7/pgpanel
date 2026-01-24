@@ -29,8 +29,8 @@ export const getDashboardSummery = async (req, res, next) => {
       pendingRents,
       resets
     ] = await Promise.all([
-      EMPLOYEE.countDocuments({ status: true }),
-      CUSTOMER.countDocuments({ status: true }),
+      EMPLOYEE.countDocuments({ status: 'Active' }),
+      CUSTOMER.countDocuments({ status: 'Active' }),
       BRANCH.countDocuments(),
       LOGINMAPPING.countDocuments({ status: true, userType: "Account" }),
       CUSTOMERRENT.countDocuments({ status: "Pending" }),

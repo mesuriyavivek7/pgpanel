@@ -46,37 +46,31 @@ export const getDashboardSummery = async (req, res, next) => {
         }
       }
     ]);
-
     const vacantSeats = vacantSeatsAgg.length ? vacantSeatsAgg[0].totalVacant : 0;
 
     /* ---------- RESET MAP ---------- */
     const resetMap = buildResetMap(resets);
 
-    /* ---------- TRANSACTIONS ---------- */
-    let transactions = await TRANSACTION.find({
+    /* ---------- ALL TRANSACTIONS (NO RESET FILTER) ---------- */
+    const allTransactions = await TRANSACTION.find({
       transactionType: { $in: ["income", "expense"] }
     })
       .populate("refId")
       .populate("bank_account")
       .populate("branch");
 
-    let depositeTransactions = await TRANSACTION.find({
+    /* ---------- DEPOSIT / WITHDRAW ---------- */
+    const depositeTransactions = await TRANSACTION.find({
       transactionType: { $in: ["deposite", "withdrawal"] }
-    })
-      .populate("refId")
-      .populate("bank_account");
+    }).populate("refId");
 
-    /* ---------- APPLY RESET FILTER ---------- */
-    const applyResetFilter = (txList) =>
-      txList.filter(tx => {
-        if (!tx.bank_account) return true;
-        const resetDate = resetMap[tx.bank_account._id.toString()];
-        if (!resetDate) return true;
-        return new Date(tx.createdAt) > resetDate;
-      });
-
-    transactions = applyResetFilter(transactions);
-    depositeTransactions = depositeTransactions;
+    /* ---------- RESET FILTERED TRANSACTIONS (ONLY FOR BANK) ---------- */
+    const resetFilteredTransactions = allTransactions.filter(tx => {
+      if (!tx.bank_account) return true;
+      const resetDate = resetMap[tx.bank_account._id.toString()];
+      if (!resetDate) return true;
+      return new Date(tx.createdAt) > resetDate;
+    });
 
     /* ---------- DEPOSIT TOTAL ---------- */
     let totalDepositeAmount = 0;
@@ -97,13 +91,14 @@ export const getDashboardSummery = async (req, res, next) => {
 
     let yearlyMap = {};
     let branchMap = {};
+
     let totalMonthlyProfit = 0;
     let totalMonthlyExpenditure = 0;
     let totalCurrentYearProfit = 0;
     let totalCurrentYearExpenditure = 0;
 
-    /* ---------- PROCESS TRANSACTIONS ---------- */
-    transactions.forEach(tx => {
+    /* ---------- PROCESS ALL TRANSACTIONS (NO RESET) ---------- */
+    allTransactions.forEach(tx => {
       if (!tx.refId?.amount) return;
 
       const amount = tx.refId.amount;
@@ -112,7 +107,7 @@ export const getDashboardSummery = async (req, res, next) => {
       const year = createdAt.getFullYear();
       const branchId = tx.branch?._id?.toString();
 
-      // Global totals
+      /* ---------- GLOBAL TOTALS ---------- */
       if (year === currentYear) {
         if (tx.transactionType === "income") {
           totalCurrentYearProfit += amount;
@@ -123,14 +118,14 @@ export const getDashboardSummery = async (req, res, next) => {
         }
       }
 
-      // Monthly chart
+      /* ---------- MONTHLY CHART ---------- */
       if (tx.transactionType === "income") {
         monthlyData[month - 1].Profit += amount;
       } else {
         monthlyData[month - 1].Expenditure += amount;
       }
 
-      // Yearly chart
+      /* ---------- YEARLY CHART ---------- */
       if (!yearlyMap[year]) {
         yearlyMap[year] = { year, Profit: 0, Expenditure: 0 };
       }
@@ -138,7 +133,7 @@ export const getDashboardSummery = async (req, res, next) => {
         ? (yearlyMap[year].Profit += amount)
         : (yearlyMap[year].Expenditure += amount);
 
-      // Branch-wise
+      /* ---------- BRANCH-WISE ---------- */
       if (branchId) {
         if (!branchMap[branchId]) {
           branchMap[branchId] = {
@@ -165,7 +160,7 @@ export const getDashboardSummery = async (req, res, next) => {
       }
     });
 
-    /* ---------- YEARLY DATA ---------- */
+    /* ---------- YEARLY DATA (LAST 5 YEARS) ---------- */
     const yearlyData = [];
     for (let y = currentYear; y > currentYear - 5; y--) {
       yearlyData.push({
@@ -175,11 +170,11 @@ export const getDashboardSummery = async (req, res, next) => {
       });
     }
 
-    /* ---------- BANK ACCOUNTS ---------- */
+    /* ---------- BANK ACCOUNTS (RESET APPLIED) ---------- */
     const accounts = await BANKACCOUNT.find({ status: "active" });
 
     const accountsData = accounts.map(acc => {
-      let accTx = transactions.filter(
+      const accTx = resetFilteredTransactions.filter(
         t => t.bank_account?._id.toString() === acc._id.toString()
       );
 
@@ -197,7 +192,7 @@ export const getDashboardSummery = async (req, res, next) => {
       };
     });
 
-    const current_balance = totalMonthlyProfit - totalMonthlyExpenditure;
+    const current_balance = accountsData.reduce((acc, val) => acc + val.current_balance , 0);
 
     /* ---------- RESPONSE ---------- */
     return res.status(200).json({
@@ -226,6 +221,7 @@ export const getDashboardSummery = async (req, res, next) => {
     next(err);
   }
 };
+
 
 
 export const getDashboardSearch = async (req, res, next) => {

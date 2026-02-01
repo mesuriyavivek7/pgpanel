@@ -27,7 +27,7 @@ export const createEmployee = async (req, res, next) => {
 
         if (!employee_name || !mobile_no || !salary || !employee_type) return res.status(400).json({ message: "Please provide all required fields.", success: false })
 
-        const existEmployee = await EMPLOYEE.findOne({ mobile_no, branch })
+        const existEmployee = await EMPLOYEE.findOne({ mobile_no, branch, status: {$ne: 'Deleted'} })
 
         if (existEmployee) return res.status(409).json({ message: "Employee is already exist with same mobile no.", success: false })
 
@@ -199,6 +199,7 @@ export const changeEmployeeStatus = async (req, res, next) => {
         const { userType, mongoid } = req
 
         const { status } = req.body
+        console.log(status)
 
         if (!employeeId || !status) return res.status(400).json({ message: "Please provide all required fields.", success: false })
 

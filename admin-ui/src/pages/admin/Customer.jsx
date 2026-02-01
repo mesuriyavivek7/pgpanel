@@ -53,7 +53,7 @@ function Customer() {
   const handleCloseForm = (refresh) =>{
     setSelectedCustomer(null)
     setOpenForm(false)
-    if(refresh) refetch()
+    if(refresh) refetch(searchQuery, selectedBranch, "" )
   }
 
   const handleCloseDepositeForm = (refresh = false) =>{

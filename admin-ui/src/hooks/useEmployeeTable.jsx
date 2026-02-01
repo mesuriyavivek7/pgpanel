@@ -76,7 +76,7 @@ export const useEmployeeTable = (handleOpenForm, handleOpenAdvanceRentForm, hand
            <GridActionsCellItem
            icon={data.row.status?<Minus size={22}></Minus>:<Check size={22}></Check>}
            label={data.row.status === "Active" ? "Deactivate" : "Activate"}
-           onClick={()=>handleChangeEmployeeStatus(data.row._id, !data.row.status)}
+           onClick={()=>handleChangeEmployeeStatus(data.row._id, data.row.status === "Active" ? "Inactive" : "Active")}
            showInMenu
            ></GridActionsCellItem>, 
            <GridActionsCellItem

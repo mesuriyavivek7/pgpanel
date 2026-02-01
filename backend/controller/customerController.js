@@ -741,6 +741,14 @@ export const deleteCustomer = async (req, res, next) =>{
 
     if(!customer) return res.status(400).json({message:"Customer is not found.", success: false})
 
+    const room = await ROOM.findById(customer.room)
+
+    if(!room) return res.status(404).json({message:"Room not found.", success: false})
+
+    room.filled = room.filled - 1;
+
+    await room.save()
+
     await CUSTOMER.findByIdAndUpdate(customerId, {status: 'Deleted'})
 
     return res.status(200).json({message:"Customer account is deleted successfully.",success: true})

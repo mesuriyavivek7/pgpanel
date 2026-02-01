@@ -230,7 +230,7 @@ export const getDashboardSummery = async (req, res, next) => {
     const totalRooms = await ROOM.find({ branch: branchId }).countDocuments();
     const totalCustomers = await CUSTOMER.find({
       branch: branchId,
-      status: true,
+      status: {$in:["Active", "Inactive"]},
     }).countDocuments();
     const totalEmployees = await EMPLOYEE.find({
       branch: branchId,

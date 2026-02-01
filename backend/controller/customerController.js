@@ -43,7 +43,7 @@ export const createCustomer = async (req, res, next) => {
 
         if (!customer_name || !mobile_no || !deposite_amount || !rent_amount || !room || !branch || !joining_date) return res.status(400).json({ message: "Please provide all required fields.", success: false })
 
-        const existCustomer = await CUSTOMER.findOne({ mobile_no })
+        const existCustomer = await CUSTOMER.findOne({ mobile_no, status: {$ne: "Deleted"} })
 
         if (existCustomer) return res.status(409).json({ message: "Customer is already exist same mobile no.", success: false })
 

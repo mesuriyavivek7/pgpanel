@@ -199,7 +199,6 @@ export const changeEmployeeStatus = async (req, res, next) => {
         const { userType, mongoid } = req
 
         const { status } = req.body
-        console.log(status)
 
         if (!employeeId || !status) return res.status(400).json({ message: "Please provide all required fields.", success: false })
 

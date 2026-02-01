@@ -603,7 +603,8 @@ export const getAllTransactions = async (req, res, next) =>{
       const transactions = await TRANSACTION.find(filter).
       populate("refId").
       populate('branch').
-      populate('bank_account')
+      populate('bank_account').
+      sort({ createdAt: -1 });
 
       return res.status(200).json({message:"All transaction retrived successfully.",success:true,data:transactions})
 

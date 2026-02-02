@@ -73,7 +73,7 @@ export const updateRoom = async (req, res, next) => {
 
 
         if (room_id && room.room_id !== room_id) {
-            const existRoom = await ROOM.findOne({ room_id })
+            const existRoom = await ROOM.findOne({ room_id, branch: room.branch })
 
             if (existRoom) return res.status(409).json({ message: "Room already exist with given room no.", success: false })
 

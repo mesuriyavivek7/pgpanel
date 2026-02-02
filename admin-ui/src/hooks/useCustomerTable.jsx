@@ -51,7 +51,7 @@ export const useCustomerTable = (handleOpenForm, room, handleOpenDepositeForm, h
       setLoading(true)
       try{
         const data = await changeCustomerStatus(customerId, status)
-        await handleGetAllCustomers()
+        await handleGetAllCustomers("", "", room)
         toast.success("Customer status changed successfully.")
       }catch(err){
 

@@ -6,12 +6,15 @@ import { useCustomerTable } from '../../hooks/useCustomerTable'
 import CustomerForm from '../../components/CustomerForm'
 import DepositeForm from '../../components/DepositeForm';
 import CustomerAdvanceRentForm from '../../components/CustomerAdvanceRentForm';
+import { deleteCustomer } from '../../services/customerService'
+import ConfirmPopUp from '../../components/ConfirmPopUp'
 
 import { DataGrid } from '@mui/x-data-grid';
 import Box from '@mui/material/Box';
 
 
 function RoomPreview() {
+  const [loader, setLoader] = useState(false)
   const [room,setRoom] = useState({})
   const [openForm,setOpenForm] = useState(false)
   const [selectedCustomer,setSelectedCustomer] = useState(null)
@@ -20,6 +23,7 @@ function RoomPreview() {
   const [openDepositeForm,setOpenDepositeForm] = useState(false)
   const [openAdvanceRentForm,setOpenAdvanceRentForm] = useState(false)
   const [openAdvanceBookingForm,setOpenAdvanceBookingForm] = useState(false)
+  const [openConfirmation,setOpenConfirmation] = useState(false)
 
   const handleOpenForm = (customer=null) =>{
     setSelectedCustomer(customer)
@@ -41,34 +45,43 @@ function RoomPreview() {
     setOpenAdvanceBookingForm(true)
     setSelectedCustomer(data)
   }
-  
 
-  const { loading, rows, columns, refetch} = useCustomerTable(handleOpenForm, location.state, handleOpenDepositeForm, handleOpenAdvanceRentForm, handleOpenAdvanceBookingForm)
+  const handleOpenConfirmBox = (data) =>{
+    setSelectedCustomer(data)
+    setOpenConfirmation(true)
+  }
+
+  const { loading, rows, columns, refetch} = useCustomerTable(handleOpenForm, location.state, handleOpenDepositeForm, handleOpenAdvanceRentForm, handleOpenAdvanceBookingForm, handleOpenConfirmBox)
 
   const handleCloseForm = (refresh) =>{
     setSelectedCustomer(null)
     setOpenForm(false)
-    if(refresh) refetch()
+    if(refresh) refetch("", "", location.state)
   }
 
   const handleCloseDepositeForm = (refresh = false) =>{
     setSelectedCustomer(null)
     setOpenDepositeForm(false)
-    if(refresh) refetch()
+    if(refresh) refetch("", "", location.state)
   }
 
   const handleCloseAdvanceRentForm = (refresh = false) =>{
     setOpenAdvanceRentForm(false)
     setSelectedCustomer(null)
-    if(refresh) refetch()
+    if(refresh) refetch("", "", location.state)
   }
 
   const handleCloseAdvanceBookingForm = (refresh = false) =>{
     setOpenAdvanceBookingForm(false)
     setSelectedCustomer(null)
-    if(refresh) refetch()
+    if(refresh) refetch("", "", location.state)
   }
 
+  const handleCloseConfirmBox = (refresh = false) =>{
+    setSelectedCustomer(null)
+    setOpenConfirmation(false)
+    if(refresh) refetch()
+  } 
 
   useEffect(()=>{
     const handleGetRoomDetails = async () =>{
@@ -87,10 +100,26 @@ function RoomPreview() {
     }
   },[])
 
+  const handleDeleteCustomer = async () =>{
+    setLoader(true)
+    try{
+      const data = await deleteCustomer(selectedCustomer._id)
+      toast.success("Customer is deleted successfully.")
+      handleCloseConfirmBox()
+      refetch()
+    }catch(err){
+      console.log(err?.message)
+      toast.error(err?.message)
+    }finally{
+     setLoader(false)
+    }
+  }
+
   return (
     <div className='flex w-full h-full flex-col gap-4 sm:gap-6 md:gap-8 px-2 sm:px-4 md:px-0'>
        {openForm && <CustomerForm selectedCustomer={selectedCustomer} onClose={handleCloseForm}></CustomerForm>}
        {openAdvanceBookingForm && <CustomerForm isAdvance={true} selectedCustomer={selectedCustomer} onClose={handleCloseAdvanceBookingForm}></CustomerForm>}
+       {openConfirmation && <ConfirmPopUp loading={loader} onClose={handleCloseConfirmBox} onAction={handleDeleteCustomer} buttonText={"Delete"} confirmText={"Are you sure to want to delete this customer?"}></ConfirmPopUp>}
       <DepositeForm openForm={openDepositeForm} customer={selectedCustomer} onClose={handleCloseDepositeForm}></DepositeForm>
       <CustomerAdvanceRentForm openForm={openAdvanceRentForm} customer={selectedCustomer} onClose={handleCloseAdvanceRentForm}></CustomerAdvanceRentForm>
        <div className='flex items-center gap-1 sm:gap-2 text-sm sm:text-base'>

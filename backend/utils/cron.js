@@ -9,7 +9,7 @@ const createMonthlyCustomerRentTask = async (month, year) => {
 
     try{
      //For customers
-     const customers = await CUSTOMER.find({status:true});
+     const customers = await CUSTOMER.find({status:"Active"});
 
      const newRents = [];
  

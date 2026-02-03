@@ -117,15 +117,12 @@ const createEmployeeSalaryTask = async (month , year) => {
 
 
 const checkAndRecoverMissedRentCrons = async () =>{
-    console.log("Customer rent generation called")
     const today = new Date();
     const currentMonth = today.getMonth() + 1;
     const currentYear = today.getFullYear();
 
     const lastLog = await CRONLOGS.findOne({task:'Customer Rent Generation', status:'Success'}).sort({year:-1, month:-1});
     let startMonth, startYear;
-
-    console.log(lastLog)
 
     if(lastLog){
       startMonth = lastLog.month;

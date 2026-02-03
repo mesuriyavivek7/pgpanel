@@ -69,6 +69,18 @@ export const useTransactionTable = () =>{
         ),
        },
        {
+        headerName: 'Details',
+        field: 'entity',
+        minWidth: 220,
+        renderCell: (params) => (
+          <div className="flex items-center w-full h-full">
+             <div className="flex items-center gap-3">
+               <span>{params.value}</span>
+             </div>
+          </div>
+        ),
+       },
+       {
         headerName: 'Credit',
         field: 'credit',
         minWidth: 200,

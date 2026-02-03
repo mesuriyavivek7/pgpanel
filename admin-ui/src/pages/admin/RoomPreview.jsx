@@ -106,7 +106,7 @@ function RoomPreview() {
       const data = await deleteCustomer(selectedCustomer._id)
       toast.success("Customer is deleted successfully.")
       handleCloseConfirmBox()
-      refetch()
+      refetch("", "", location.state)
     }catch(err){
       console.log(err?.message)
       toast.error(err?.message)

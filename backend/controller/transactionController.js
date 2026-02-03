@@ -566,52 +566,161 @@ export const createTransactionForCashout = async (req, res, next) =>{
 }
 
 
-export const getAllTransactions = async (req, res, next) =>{
-   try{
-      const {mongoid, userType} = req 
+export const getAllTransactions = async (req, res, next) => {
+  try {
+    const { mongoid, userType } = req;
+    const { branch, bank_account, transactionType } = req.query;
 
-      const {branch, bank_account ,transactionType} = req.query
-        
-      let filter = {}
+    let filter = {};
 
-      if(userType === "Account"){      
-         const account = await ACCOUNT.findById(mongoid)
+    // -----------------------
+    // Branch access filter
+    // -----------------------
+    if (userType === "Account") {
+      const account = await ACCOUNT.findById(mongoid);
 
-         if(!account) return res.status(404).json({message:"Account manager not found.",success:false})
+      if (!account)
+        return res.status(404).json({
+          message: "Account manager not found.",
+          success: false
+        });
 
-         if(branch){
-            if(!account.branch.includes(branch)) return res.status(403).json({message:"You have not access to see transactions for this branch.",success:false})
+      if (branch) {
+        if (!account.branch.includes(branch)) {
+          return res.status(403).json({
+            message:
+              "You have not access to see transactions for this branch.",
+            success: false
+          });
+        }
 
-            filter.branch = branch
-         }else{
-            filter.branch = {$in:account.branch}
-         }
-      }else{
-         if(branch){
-            filter.branch = branch
-         }
+        filter.branch = branch;
+      } else {
+        filter.branch = { $in: account.branch };
+      }
+    } else {
+      if (branch) {
+        filter.branch = branch;
+      }
+    }
+
+    // -----------------------
+    // Other filters
+    // -----------------------
+    if (bank_account) {
+      filter.bank_account = bank_account;
+    }
+
+    if (transactionType) {
+      filter.type = transactionType;
+    }
+
+    // -----------------------
+    // Fetch transactions
+    // -----------------------
+    const transactions = await TRANSACTION.find(filter)
+      .populate("refId")          // only safe populate
+      .populate("branch")
+      .populate("bank_account")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // -----------------------
+    // Collect ids for batch lookup
+    // -----------------------
+    const customerIds = [];
+    const employeeIds = [];
+
+    for (const tx of transactions) {
+      if (tx.refModel === "Depositeamount" && tx.refId?.customer) {
+        customerIds.push(tx.refId.customer);
       }
 
-      if(bank_account) {
-         filter.bank_account = bank_account
+      if (tx.refModel === "Employeesalary" && tx.refId?.employee) {
+        employeeIds.push(tx.refId.employee);
+      }
+    }
+
+    // -----------------------
+    // Fetch customers & employees in one query
+    // -----------------------
+    const customers = customerIds.length
+      ? await CUSTOMER.find({ _id: { $in: customerIds } })
+          .select("customer_name")
+          .lean()
+      : [];
+
+    const employees = employeeIds.length
+      ? await EMPLOYEE.find({ _id: { $in: employeeIds } })
+          .select("employee_name")
+          .lean()
+      : [];
+
+   
+
+    const customerMap = {};
+    const employeeMap = {};
+
+    for (const c of customers) {
+      customerMap[c._id.toString()] = c.customer_name;
+    }
+
+    for (const e of employees) {
+      employeeMap[e._id.toString()] = e.employee_name;
+    }
+
+    // -----------------------
+    // Build entity field
+    // -----------------------
+    const finalData = transactions.map((tx) => {
+
+      let entity = "-";
+
+      switch (tx.refModel) {
+
+        case "Depositeamount":
+          entity =
+            customerMap[tx.refId?.customer?.toString()] || "-";
+          break;
+
+        case "Employeesalary":
+          entity =
+            employeeMap[tx.refId?.employee?.toString()] || "-";
+          break;
+
+        case "Inventorypurchase":
+          entity = tx.refId?.item_name || "-";
+          break;
+
+        case "Monthlypayment":
+          entity = tx.refId?.payment_name || "-";
+          break;
+
+        case "Cashout":
+          entity = tx.refId?.person_name || "-";
+          break;
+
+        default:
+          entity = "-";
       }
 
-      if(transactionType) {
-         filter.type = transactionType
-      }
+      return {
+        ...tx,
+        entity
+      };
+    });
 
-      const transactions = await TRANSACTION.find(filter).
-      populate("refId").
-      populate('branch').
-      populate('bank_account').
-      sort({ createdAt: -1 });
+    return res.status(200).json({
+      message: "All transaction retrieved successfully.",
+      success: true,
+      data: finalData
+    });
 
-      return res.status(200).json({message:"All transaction retrived successfully.",success:true,data:transactions})
+  } catch (err) {
+    next(err);
+  }
+};
 
-   }catch(err){
-      next(err)
-   }
-}
 
 export const exportExcelTransactions = async (req, res, next) =>{
    try{

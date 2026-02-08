@@ -156,3 +156,24 @@ export const getRoomById = async (req, res, next) => {
         next(err)
     }
 }
+
+export const deleteRoom = async (req, res, next) =>{
+    try{
+         const {roomId} = req.params 
+
+         if(!roomId) return res.status(400).json({message:"Roomid is required.", success:false}) 
+
+         const room = await ROOM.findById(roomId)
+
+         if(!room) return res.status(404).json({message:"Room is not found.",success:false})
+
+         if(room.filled > 0) return res.status(400).json({message:"Room is filled with customers.", success:false})
+
+         await ROOM.findByIdAndDelete(roomId)
+
+         return res.status(200).json({message:"Room is deleted.", success: true})
+
+    }catch(err){
+        next(err)
+    }
+} 

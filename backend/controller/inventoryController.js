@@ -63,3 +63,43 @@ export const getAllInventoryTransaction = async (req, res, next) => {
         next(err)
     }
 }
+
+
+export const updateInventory = async (req, res, next) =>{
+    try{
+        const {transactionId} = req.params
+        const {item_name, item_type, amount, branch, payment_mode, bank_account} = req.body 
+
+        if(!transactionId) return res.status(400).json({message:"Please provide transaction id.", success: false})
+
+        const transaction = await TRANSACTION.findById(transactionId)
+
+        if(!transaction) return res.status(400).json({message:"Transaction not found."})
+
+        if(transaction.type !== "inventory_purchase") return res.status(400).json({message:"Invalid transaction.", success: false})
+
+        const inventoryId = transaction.refId 
+
+        const inventory = await INVENTORYPURCHASE.findById(inventoryId) 
+
+        if(!inventory) return res.status(404).json({message:"Inventory not found.",success: false})
+
+        //Update for inventory
+        if(item_name) inventory.item_name = item_name 
+        if(item_type) inventory.item_type = item_type 
+        if(amount !== null || amount !== undefined) inventory.amount = amount
+
+        //Update for transaction 
+        if(branch) transaction.branch = branch 
+        if(payment_mode) transaction.payment_mode = payment_mode
+        if(bank_account) transaction.bank_account = bank_account
+        
+        await inventory.save() 
+        await transaction.save()
+
+        return res.status(200).json({message:"Inventory item updated.",success:true})
+
+    }catch(err){
+        next(err)
+    }
+}

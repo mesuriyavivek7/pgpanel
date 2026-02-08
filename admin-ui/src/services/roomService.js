@@ -48,3 +48,15 @@ export const getRoomById = async (roomId) =>{
     throw new Error(errMessage)
    }
 }
+
+//For delete room 
+export const deleteRoomById = async (roomId) =>{
+   try{
+    const response = await api.delete(`/room/${roomId}`)
+    return response.data.data
+   }catch(err){
+    console.log(err)
+    const errMessage = err?.response?.data?.message || "Something went wrong."
+    throw new Error(errMessage)
+   }
+}

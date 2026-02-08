@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import Tooltip from "@mui/material/Tooltip";
 import { toast } from "react-toastify";
 import { sliceString } from "../helper";
+import { GridActionsCellItem } from "@mui/x-data-grid";
+import { Pencil } from "lucide-react";
 
 //Importing images
 import VEG from '../assets/vegetables.png'
@@ -24,7 +26,7 @@ const getItemImage = (inventory_type) =>{
     }
 }
 
-export const useInventoryTable = () => {
+export const useInventoryTable = (handleOpenForm) => {
     const [rows,setRows] = useState([])
     const [loading,setLoading] = useState(false)
 
@@ -45,6 +47,20 @@ export const useInventoryTable = () => {
     useEffect(()=>{
        handleGetAllInventoryTransaction()
     },[])
+
+    const renderAction = (data) => {
+        let actionArr = [] 
+
+        actionArr.push(
+            <GridActionsCellItem
+            icon={<Pencil size={22}></Pencil>}
+            label="Edit"
+            onClick={()=>handleOpenForm(data.row)}
+            ></GridActionsCellItem>
+        )
+
+        return actionArr
+    }
 
     const columns = [
         {
@@ -125,6 +141,13 @@ export const useInventoryTable = () => {
                 </div>
             ),
         },
+        {
+            headerName: 'Actions',
+            field: 'actions',
+            type: 'actions',
+            minWidth: 150,
+            getActions: (params) => renderAction(params)
+        }
     ]
 
     return {columns, rows, loading, refetch:handleGetAllInventoryTransaction}

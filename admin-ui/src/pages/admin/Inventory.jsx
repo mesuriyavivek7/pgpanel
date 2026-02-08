@@ -11,25 +11,28 @@ function Inventory() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedBranch,setSelectedBranch] = useState('')
   const [openForm,setOpenForm] = useState(false)
+  const [selectedInventory, setSelectedInventory] = useState(null)
 
-  const {rows, columns, loading, refetch} = useInventoryTable()
-
-  const handleOpenForm = () =>{
+  const handleOpenForm = (inventory = null) =>{
+    setSelectedInventory(inventory)
     setOpenForm(true)
   }
+
+  const {rows, columns, loading, refetch} = useInventoryTable(handleOpenForm)
 
   useEffect(()=>{
     refetch(searchQuery, selectedBranch)
   },[searchQuery, selectedBranch])
 
   const handleCloseForm = (refresh = false) =>{
+    setSelectedInventory(null)
     setOpenForm(false)
     if(refresh) refetch()
   }
 
   return (
     <div className="flex w-full h-full flex-col gap-8">
-      {openForm && <InventoryForm onClose={handleCloseForm}></InventoryForm>}
+      {openForm && <InventoryForm selectedInventory={selectedInventory} onClose={handleCloseForm}></InventoryForm>}
       <Breadcrumb
       searchQuery={searchQuery}
       setSearchQuery={setSearchQuery}

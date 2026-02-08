@@ -10,16 +10,21 @@ import {toast} from 'react-toastify'
 import { getAllBranch } from '../services/branchService';
 import { createTransactionForInventoryPurchase } from '../services/transactionService';
 import { getAllBankAccount } from '../services/bankAccountService';
+import { updateInventoryTransaction } from '../services/inventoryService';
 
-function InventoryForm({onClose}) {
+function InventoryForm({selectedInventory,onClose}) {
+  console.log('selected inventory---->', selectedInventory)
   const [loading, setLoading] = useState(false)
   const [branches, setBranches] = useState([])
   const [bankAccounts,setBankAccounts] = useState([])
+  const [selectedBankAccount,setSelectedBankAccount] = useState(null)
+  const [selectedBranch,setSelectedBranch] = useState(null)
 
   const {
     register,
     handleSubmit,
     formState: {errors},
+    reset
   } = useForm({
     mode:'onChange',
     resolver: zodResolver(inventorySchema),
@@ -28,9 +33,25 @@ function InventoryForm({onClose}) {
        item_type:'',
        amount:0,
        payment_mode:'',
-       branch:''
+       branch:'',
+       bank_account:''
     }
   })
+
+  useEffect(()=>{
+    if(selectedInventory){
+      reset({
+        item_name: selectedInventory?.refId?.item_name, 
+        item_type:selectedInventory?.refId?.item_type,
+        amount:selectedInventory?.refId?.amount,
+        payment_mode:selectedInventory?.payment_mode,
+        branch:selectedInventory?.branch?._id,
+        bank_account:selectedInventory?.bank_account
+      })
+    }
+    setSelectedBankAccount(selectedInventory?.bank_account)
+    setSelectedBranch(selectedInventory?.branch?._id)
+  },[selectedInventory])
 
   useEffect(()=>{
     const handleGetAllBranch = async ()=>{
@@ -42,7 +63,6 @@ function InventoryForm({onClose}) {
          toast.error(err?.message)
       }
     }
- 
     handleGetAllBranch()
    },[])
 
@@ -73,15 +93,29 @@ function InventoryForm({onClose}) {
         setLoading(false)
      }
   }
+
+  const handleUpdateInventoryPurchase = async (inventoryData) =>{
+    try{
+      setLoading(true)
+      const data = await updateInventoryTransaction(selectedInventory._id,inventoryData)
+      toast.success('Inventory data updated successfully.')
+      onClose(true)
+    }catch(err){
+      console.log(err)
+      toast.error(err?.message)
+    }finally{
+      setLoading(false)
+    }
+  } 
   
   return (
     <div className='fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center'>
         <div className='flex w-xl flex-col gap-4 bg-white rounded-2xl p-4'>
            <div className="flex items-center gap-2 mb-2">
             <ChevronLeft size={28} onClick={()=>onClose(false)} className="cursor-pointer"></ChevronLeft>
-            <h1 className="text-2xl font-semibold">Inventory Purchase</h1>
+            <h1 className="text-2xl font-semibold">{selectedInventory ? "Edit Inventory" : "Inventory Purchase" }</h1>
            </div>
-           <form onSubmit={handleSubmit(handleCreateInventoryTransaction)} className='flex flex-col gap-4'>
+           <form onSubmit={handleSubmit(selectedInventory ? handleUpdateInventoryPurchase : handleCreateInventoryTransaction )} className='flex flex-col gap-4'>
                <div className='flex flex-col gap-2'>
                  <label>Item Name <span className='text-sm text-red-500'>*</span></label>
                  <div className='flex flex-col'>
@@ -125,7 +159,8 @@ function InventoryForm({onClose}) {
                 <label>Branch <span className='text-sm text-red-500'>*</span></label>
                 <div className='flex flex-col'>
                   <select 
-                  {...register('branch')}
+                  {...register('branch', {onChange: (e) => setSelectedBranch(e.target.value)})}
+                  value={selectedBranch}
                   className='p-2 border border-neutral-300 rounded-md outline-none'>
                      <option value={''}>--- Select Branch ---</option>
                      {
@@ -156,7 +191,8 @@ function InventoryForm({onClose}) {
                 <label>Select Bank Account <span className='text-red-500 text-sm'>*</span></label>
                 <div className='flex flex-col'>
                    <select 
-                   {...register('bank_account')}
+                   {...register('bank_account', {onChange: (e) => setSelectedBankAccount(e.target.value)})}
+                   value={selectedBankAccount}
                    className='p-2 border border-neutral-300 rounded-md outline-none'>
                      <option value={''}>-- Select Bank Account --</option>
                      {

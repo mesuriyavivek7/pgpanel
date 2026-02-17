@@ -26,14 +26,28 @@ export const getDashboardSummery = async (req, res, next) => {
       totalCustomers,
       totalBranch,
       totalAcManagers,
-      pendingRents,
+      totalPendingRents,
       resets
     ] = await Promise.all([
       EMPLOYEE.countDocuments({ status: 'Active' }),
       CUSTOMER.countDocuments({ status: 'Active' }),
       BRANCH.countDocuments(),
       LOGINMAPPING.countDocuments({ status: true, userType: "Account" }),
-      CUSTOMERRENT.countDocuments({ status: "Pending" }),
+      CUSTOMERRENT.aggregate([
+        {$match:{status:"Pending"}} ,
+        {
+          $lookup:{
+            from:"customers",
+            localField:"customer",
+            foreignField:"_id",
+            as:"customerData"
+          }
+        },
+        {$unwind:"$customerData"},
+        {$match:{"customerData.status":"Active"}},
+        {$group:{_id:"$customer"}},
+        {$count:"Total"}
+      ]),
       RESETACCOUNT.find()
     ]);
 
@@ -192,7 +206,9 @@ export const getDashboardSummery = async (req, res, next) => {
       };
     });
 
-    const current_balance = accountsData.reduce((acc, val) => acc + val.current_balance , 0);
+    const current_balance = accountsData.reduce((acc, val) => acc + val.current_balance, 0);
+
+    const pendingRents = totalPendingRents.length ? totalPendingRents[0].Total : 0;
 
     /* ---------- RESPONSE ---------- */
     return res.status(200).json({

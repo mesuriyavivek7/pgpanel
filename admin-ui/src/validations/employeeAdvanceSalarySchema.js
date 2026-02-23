@@ -1,9 +1,9 @@
 import {z} from 'zod' 
 
 export const employeeAdvanceSalarySchema = z.object({
-    customer: z.
+    employee: z.
     string()
-    .min(1, { message: 'Customer id is required.'}),
+    .min(1, { message: 'Employee id is required.'}),
   
     month: z.
     number({invalid_type_error:"Please select month of payment."})

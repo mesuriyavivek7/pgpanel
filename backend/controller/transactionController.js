@@ -372,6 +372,7 @@ export const createTransactionForEmployeeSalary = async (req, res, next) =>{
 }
 
 export const createTransactionForEmployeeAdvancePay = async (req, res, next) =>{
+   try{
       const {mongoid, userType} = req 
 
       const {employee, amount, payment_mode, month, year, bank_account} = req.body
@@ -395,18 +396,43 @@ export const createTransactionForEmployeeAdvancePay = async (req, res, next) =>{
 
       if(amount < 0) return res.status(400).json({message:"amount value is invalid.",success:false})
 
-      const isRentPaid = existCustomer.rent_amount === amount
+      if(amount > existEmployee.salary) return res.status(400).json({message:"Amount can't be greater then employee salary amount.",success:false})
 
-      //Create customer rent 
-      const employeeSalary = new EMPLOYEESALARY({
-         employee,
-         rent:existEmployee.salary,
-         paid_amount:amount,
-         month,
-         year,
-         status:isRentPaid ? 'Paid' : 'Pending',
-      })
+      //Check employee salary already exist 
+      const existEmployeeSalary = await EMPLOYEESALARY.findOne({employee, month, year})
 
+      if(existEmployeeSalary){
+         if(existEmployeeSalary.status === "Paid") return res.status(400).json({message:"Salary for this month is already paid.", success: false})
+
+         if(existEmployeeSalary.paid_amount + amount > existEmployee.salary) return res.status(400).json({message:"Amount can't be greater then employee salary amount.",success:false})
+
+         const isSalaryPaid = (existEmployeeSalary.paid_amount + amount) === existEmployeeSalary.salary ? "Paid" : "Pending"
+
+         existEmployeeSalary.paid_amount = existEmployeeSalary.paid_amount + amount 
+         
+         existEmployeeSalary.status = isSalaryPaid
+
+         await existEmployeeSalary.save()
+
+      }else{
+         const isSalaryPaid = existEmployee.salary === amount
+
+         //Create customer rent 
+         const employeeSalary = new EMPLOYEESALARY({
+            employee,
+            salary:existEmployee.salary,
+            paid_amount:amount,
+            month,
+            year,
+            status:isSalaryPaid ? 'Paid' : 'Pending',
+         })
+
+         await employeeSalary.save()
+   
+      }
+         
+
+      
       const salaryAttempt = new SALARYATTEMPT({
          employee,
          amount,
@@ -424,11 +450,14 @@ export const createTransactionForEmployeeAdvancePay = async (req, res, next) =>{
          bank_account
       })
 
-      await employeeSalary.save()
+      
       await salaryAttempt.save()
       await transaction.save()
 
       return res.status(200).json({message:"Advance rent paid successfully.",success:true})
+   }catch(err){
+      next(err)
+   }
 }
 
 export const createTransactionForInventory = async (req, res, next) =>{

@@ -186,7 +186,7 @@ function AdminDashboard() {
                 <h1 className="text-base sm:text-lg font-semibold">{branch?.branch_name}</h1>
                 <div className="grid grid-cols-2 gap-2 items-center">
                    <div className="flex flex-col">
-                     <span className="text-xs sm:text-sm text-[#71717a] font-medium">Total Profits</span>
+                     <span className="text-xs sm:text-sm text-[#71717a] font-medium">Total Income</span>
                      <span className="text-sm sm:text-base font-bold">{convertIntoRupees(view === "monthly"? branch?.totalCurrentYearProfit :branch?.totalMonthlyProfit)}</span>
                    </div>
                    <div className="flex flex-col">

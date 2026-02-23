@@ -123,6 +123,8 @@ function EmployeeAdvanceSalary({openForm, employee, onClose}) {
     }
   }
 
+  console.log(errors)
+
   return (
     <div className='fixed z-50 backdrop-blur-sm inset-0 bg-black/40 flex justify-center items-center px-4 py-4 sm:px-6 sm:py-6'>
         <div className='flex w-full max-w-xl flex-col gap-3 sm:gap-4 bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 max-h-[90vh] overflow-y-auto'>

@@ -5,6 +5,7 @@ import TRANSACTION from "../models/TRANSACTION.js";
 import ACCOUNT from "../models/ACCOUNT.js";
 import DEPOSITEAMOUNT from "../models/DEPOSITEAMOUNT.js";
 import CUSTOMERRENT from "../models/CUSTOMERRENT.js";
+import BANKACCOUNT from "../models/BANKACCOUNT.js";
 import mongoose from "mongoose";
 import ExcelJS from "exceljs";
 
@@ -657,79 +658,187 @@ export const changeStatus = async (req, res, next) => {
 //     }
 // }
 
-export const getPendingCustomerRentList = async (req, res, next) =>{
-    try{
-        const { searchQuery, branch } = req.query 
 
-        const {mongoid, userType} = req 
-        let filter = {
-            status: "Active" 
-        }
+export const getPendingCustomerRentList = async (req, res, next) => {
+  try {
+    const { searchQuery, branch } = req.query;
+    const { mongoid, userType } = req;
 
-        if(searchQuery){
-            filter.customer_name = { $regex: searchQuery, $options: 'i' };
-        }
+    let filter = { status: "Active" };
 
-        if(userType === "Account"){
-            const account = await ACCOUNT.findById(mongoid) 
-
-            if(!account) return res.status(400).json({message:"Account manager not found.",success:false})
-
-            if(branch) {
-                if(!account.branch.includes(branch)) return res.status(403).json({message:"You have no access to get pending rents of requested branch.",success:false})
-
-                filter.branch = branch
-            }else{
-                filter.branch = { $in: account.branch };
-            }
-        }else {
-            if(branch){
-                filter.branch = branch
-            }
-        }
-
-        const customers = await CUSTOMER.find(filter)
-            .populate('branch')
-            .populate('room')
-            .sort({createdAt:-1})
-
-        const result = [] 
-
-        for (const customer of customers){
-            const pendingRents = await CUSTOMERRENT.find({customer: customer._id, status:'Pending'})
-
-            const pendingRentMap = [] 
-
-            for(const customerRent of pendingRents){
-                const isRequired = !(customerRent.month === (new Date().getMonth() + 1) && customerRent.year === new Date().getFullYear())
-                pendingRentMap.push({
-                    month:customerRent.month,
-                    year:customerRent.year,
-                    pending: customerRent.rent - customerRent.paid_amount,
-                    required:isRequired
-                })
-            }
-
-            if(pendingRentMap.length > 0){
-                result.push({
-                    customerId: customer._id,
-                    customer_name: customer.customer_name,
-                    branch: customer.branch,
-                    room: customer.room,
-                    mobile_no: customer.mobile_no,
-                    rent_amount: customer.rent_amount,
-                    pending_rent: pendingRentMap
-                })
-            }
-
-        }
-
-        return res.status(200).json({ message: "Pending customer list fetched successfully.", success: true, data: result })
-
-    }catch(err){
-        next(err)
+    if (searchQuery) {
+      filter.customer_name = { $regex: searchQuery, $options: "i" };
     }
-}
+
+    if (userType === "Account") {
+      const account = await ACCOUNT.findById(mongoid).lean();
+    
+      if (!account) {
+        return res.status(400).json({
+          message: "Account manager not found.",
+          success: false,
+        });
+      }
+    
+      // Convert account branches to string array for safe comparison
+      const accountBranchIds = account.branch.map(b => b.toString());
+    
+      if (branch) {
+        // Validate ObjectId format first
+        if (!mongoose.Types.ObjectId.isValid(branch)) {
+          return res.status(400).json({
+            message: "Invalid branch id.",
+            success: false,
+          });
+        }
+    
+        // Check access safely
+        if (!accountBranchIds.includes(branch)) {
+          return res.status(403).json({
+            message:
+              "You have no access to get pending rents of requested branch.",
+            success: false,
+          });
+        }
+    
+        // Convert to ObjectId before filtering
+        filter.branch = new mongoose.Types.ObjectId(branch);
+    
+      } else {
+        // Convert all branches to ObjectId
+        filter.branch = {
+          $in: account.branch.map(b => new mongoose.Types.ObjectId(b)),
+        };
+      }
+    
+    } else {
+    
+      if (branch) {
+        if (!mongoose.Types.ObjectId.isValid(branch)) {
+          return res.status(400).json({
+            message: "Invalid branch id.",
+            success: false,
+          });
+        }
+    
+        filter.branch = new mongoose.Types.ObjectId(branch);
+      }
+    
+    }
+
+    const currentMonth = new Date().getMonth() + 1;
+    const currentYear = new Date().getFullYear();
+
+    const customers = await CUSTOMER.aggregate([
+      { $match: filter },
+
+      // 🔹 Lookup Branch
+      {
+        $lookup: {
+          from: "branches",
+          localField: "branch",
+          foreignField: "_id",
+          as: "branch",
+        },
+      },
+      { $unwind: "$branch" },
+
+      // 🔹 Lookup Room
+      {
+        $lookup: {
+          from: "rooms",
+          localField: "room",
+          foreignField: "_id",
+          as: "room",
+        },
+      },
+      { $unwind: "$room" },
+
+      // 🔹 Lookup Pending Rents
+      {
+        $lookup: {
+          from: "customerrents",
+          localField: "_id",
+          foreignField: "customer",
+          as: "rents",
+        },
+      },
+
+      {
+        $addFields: {
+          rents: {
+            $filter: {
+              input: "$rents",
+              as: "rent",
+              cond: { $eq: ["$$rent.status", "Pending"] },
+            },
+          },
+        },
+      },
+
+      // 🔹 Only customers with pending rents
+      {
+        $match: {
+          "rents.0": { $exists: true },
+        },
+      },
+
+      // 🔹 Format Pending Rent Map
+      {
+        $project: {
+          customerId: '$_id',
+          customer_name: 1,
+          mobile_no: 1,
+          rent_amount: 1,
+          branch: 1,
+          room: 1,
+          pending_rent: {
+            $map: {
+              input: "$rents",
+              as: "rent",
+              in: {
+                month: "$$rent.month",
+                year: "$$rent.year",
+                pending: {
+                  $subtract: ["$$rent.rent", "$$rent.paid_amount"],
+                },
+                required: {
+                  $cond: [
+                    {
+                      $and: [
+                        { $eq: ["$$rent.month", currentMonth] },
+                        { $eq: ["$$rent.year", currentYear] },
+                      ],
+                    },
+                    false,
+                    true,
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+
+      // 🔥 SORTING HERE
+      {
+        $sort: {
+          "branch.branch_name": 1,   // Alphabetical branch
+          "room.room_id": 1,         // Room number ascending
+          customer_name: 1,          // Optional clean sorting
+        },
+      },
+    ]);
+
+    return res.status(200).json({
+      message: "Pending customer list fetched successfully.",
+      success: true,
+      data: customers,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const deleteCustomer = async (req, res, next) =>{
    try{
@@ -748,6 +857,8 @@ export const deleteCustomer = async (req, res, next) =>{
     room.filled = room.filled - 1;
 
     await room.save()
+
+    await CUSTOMERRENT.deleteMany({customer:customerId})
 
     await CUSTOMER.findByIdAndUpdate(customerId, {status: 'Deleted'})
 

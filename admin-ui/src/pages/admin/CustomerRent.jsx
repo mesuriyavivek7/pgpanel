@@ -30,7 +30,7 @@ function CustomerRent() {
   const handleCloseForm = (refresh) => {
     setSelectedCustomer(null);
     setOpenForm(false);
-    if (refresh) refetch();
+    if (refresh) refetch(searchQuery, selectedBranch);
   };
 
   return (

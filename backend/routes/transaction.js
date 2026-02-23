@@ -1,6 +1,6 @@
 import express from 'express'
 import { verifyToken, verifyAdmin } from '../middleware/verifyUser.js'
-import { createTransactionForAdvanceRentPay, createTransactionForCashout, createTransactionForCustomerRent, createTransactionForDepositeAmount, createTransactionForEmployeeSalary, createTransactionForInventory, createTransactionForMonthlyPayment, exportExcelTransactions, getAllTransactions } from '../controller/transactionController.js'
+import { createTransactionForAdvanceRentPay, createTransactionForCashout, createTransactionForCustomerRent, createTransactionForDepositeAmount, createTransactionForEmployeeAdvancePay, createTransactionForEmployeeSalary, createTransactionForInventory, createTransactionForMonthlyPayment, exportExcelTransactions, getAllTransactions } from '../controller/transactionController.js'
 
 const app = express.Router()
 
@@ -13,8 +13,11 @@ app.post('/advance-rent', verifyToken, createTransactionForAdvanceRentPay)
 //For create transaction for deposite amount
 app.post('/deposite', verifyToken, createTransactionForDepositeAmount)
 
-//For create transaction for customer salary
+//For create transaction for employee salary
 app.post('/employee-salary', verifyToken, createTransactionForEmployeeSalary)
+
+//For create transaction for employee advance salary 
+app.post('/employee-advance-salary', verifyToken, createTransactionForEmployeeAdvancePay)
 
 //For create transaction for inventory item
 app.post('/inventory-purchase', verifyToken, createTransactionForInventory)

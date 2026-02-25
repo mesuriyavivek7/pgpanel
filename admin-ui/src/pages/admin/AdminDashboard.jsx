@@ -184,7 +184,7 @@ function AdminDashboard() {
             dashboardData?.branchWiseData?.map((branch, index) => (
               <div key={index} className="p-3 sm:p-4 bg-white border border-neutral-300 rounded-md flex flex-col gap-3 sm:gap-4">
                 <h1 className="text-base sm:text-lg font-semibold">{branch?.branch_name}</h1>
-                <div className="grid grid-cols-2 gap-2 items-center">
+                <div className="grid grid-cols-3 gap-2 items-center">
                    <div className="flex flex-col">
                      <span className="text-xs sm:text-sm text-[#71717a] font-medium">Total Income</span>
                      <span className="text-sm sm:text-base font-bold">{convertIntoRupees(view === "monthly"? branch?.totalCurrentYearProfit :branch?.totalMonthlyProfit)}</span>
@@ -192,6 +192,10 @@ function AdminDashboard() {
                    <div className="flex flex-col">
                      <span className="text-xs sm:text-sm text-[#71717a] font-medium">Total Expenses</span>
                      <span className="text-sm sm:text-base font-bold">{convertIntoRupees(view === "monthly"? branch?.totalCurrentYearExpenditure :branch?.totalMonthlyExpenditure)}</span>
+                   </div>
+                   <div className="flex flex-col">
+                     <span className="text-xs sm:text-sm text-[#71717a] font-medium">Total Profit</span>
+                     <span className="text-sm sm:text-base font-bold">{convertIntoRupees(view === "monthly" ? (branch?.totalCurrentYearProfit - branch?.totalCurrentYearExpenditure) : (branch?.totalMonthlyProfit - branch?.totalMonthlyExpenditure)  )}</span>
                    </div>
                 </div>
               </div>

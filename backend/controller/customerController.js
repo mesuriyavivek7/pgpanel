@@ -145,71 +145,131 @@ export const createCustomer = async (req, res, next) => {
 }
 
 export const getAllCustomer = async (req, res, next) => {
-    try {
-      const { mongoid, userType } = req;
-      const { searchQuery, branch, room } = req.query;
-  
-      const filter = {
-        status: {$in: ["Active", "Inactive"]}
-      };
-  
-      // If user is Account type, restrict their access to allowed branches
-      if (userType === "Account") {
-        const account = await ACCOUNT.findById(mongoid);
-  
-        if (!account) {
-          return res
-            .status(404)
-            .json({ message: "Account not found.", success: false });
+  try {
+    const { mongoid, userType } = req;
+    const { searchQuery, branch, room } = req.query;
+
+    const filter = {
+      status: { $in: ["Active", "Inactive"] },
+    };
+
+    if (userType === "Account") {
+      const account = await ACCOUNT.findById(mongoid).lean();
+
+      if (!account) {
+        return res.status(404).json({
+          message: "Account not found.",
+          success: false,
+        });
+      }
+
+      const accountBranchIds = account.branch.map((b) => b.toString());
+
+      if (branch) {
+        if (!mongoose.Types.ObjectId.isValid(branch)) {
+          return res.status(400).json({
+            message: "Invalid branch id.",
+            success: false,
+          });
         }
-  
-        // If a branch query param is passed, check access
-        if (branch) {
-          if (!account.branch.includes(branch)) {
-            return res.status(403).json({
-              message:
-                "You do not have access to get customers for this branch.",
-              success: false,
-            });
-          }
-          filter.branch = branch; // Allowed branch
-        } else {
-          // If no branch query provided, restrict to account's accessible branches
-          filter.branch = { $in: account.branch };
+
+        if (!accountBranchIds.includes(branch)) {
+          return res.status(403).json({
+            message:
+              "You do not have access to get customers for this branch.",
+            success: false,
+          });
         }
+
+        filter.branch = new mongoose.Types.ObjectId(branch);
       } else {
-        // If not Account type, allow branch filter freely
-        if (branch) {
-          filter.branch = branch;
+        filter.branch = {
+          $in: account.branch.map(
+            (b) => new mongoose.Types.ObjectId(b)
+          ),
+        };
+      }
+    } else {
+      if (branch) {
+        if (!mongoose.Types.ObjectId.isValid(branch)) {
+          return res.status(400).json({
+            message: "Invalid branch id.",
+            success: false,
+          });
         }
+
+        filter.branch = new mongoose.Types.ObjectId(branch);
       }
-  
-      // Search filter
-      if (searchQuery) {
-        filter.customer_name = { $regex: searchQuery, $options: "i" };
-      }
-  
-      // Room filter
-      if (room) {
-        filter.room = room;
-      }
-  
-      // Query DB
-      const customers = await CUSTOMER.find(filter)
-        .populate("room")
-        .populate("branch")
-        .populate("added_by")
-        .sort({ createdAt: -1 });
-  
-      res.status(200).json({
-        message: "All customer details retrieved.",
-        data: customers,
-        success: true,
-      });
-    } catch (err) {
-      next(err);
     }
- };
+
+    if (searchQuery) {
+      filter.customer_name = {
+        $regex: searchQuery,
+        $options: "i",
+      };
+    }
+
+    if (room) {
+      if (!mongoose.Types.ObjectId.isValid(room)) {
+        return res.status(400).json({
+          message: "Invalid room id.",
+          success: false,
+        });
+      }
+
+      filter.room = new mongoose.Types.ObjectId(room);
+    }
+
+
+    const customers = await CUSTOMER.aggregate([
+      { $match: filter },
+    
+      // Branch lookup
+      {
+        $lookup: {
+          from: "branches",
+          localField: "branch",
+          foreignField: "_id",
+          as: "branch",
+        },
+      },
+      { $unwind: "$branch" },
+    
+      // Room lookup
+      {
+        $lookup: {
+          from: "rooms",
+          localField: "room",
+          foreignField: "_id",
+          as: "room",
+        },
+      },
+      { $unwind: "$room" },
+    
+      // 🔥 SORT
+      {
+        $sort: {
+          "branch.branch_name": 1,
+          "room.room_id": 1,
+          customer_name: 1,
+        },
+      },
+    ]);
+
+    const populatedCustomers = await CUSTOMER.populate(customers, {
+      path: "added_by",
+    });
+
+    return res.status(200).json({
+      message: "All customer details retrieved.",
+      success: true,
+      data: populatedCustomers,
+    });
+
+  } catch (err) {
+    next(err);
+  }
+};
 
 export const getCustomerByRoomId = async (req, res, next) => {
     try {
@@ -360,7 +420,6 @@ export const updateCustomerDetails = async (req, res, next) => {
                   status: "completed",
                   branch: customer.branch,
                   bank_account: defaultBankAccount ? defaultBankAccount._id : null,
-                  pgcode,
                   added_by: mongoid,
                   added_by_type: userType,
                 })

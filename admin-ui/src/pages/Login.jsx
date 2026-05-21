@@ -41,6 +41,12 @@ function Login() {
     setLoading(true)
     try{
        const data = await login(formData)
+       if(data?.requires2FA){
+         navigate('/verify-otp', {
+           state: { email: data.email, userType: formData.userType, formData }
+         })
+         return
+       }
        loginSuccess(data)
        navigate(data.userType==="Admin"?"/admin":"/account")
     }catch(err){

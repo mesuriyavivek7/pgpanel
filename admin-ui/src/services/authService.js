@@ -23,6 +23,16 @@ export const login = async (data)=>{
     }
 }
 
+export const verifyOtp = async (data) => {
+    try {
+        const response = await api.post('/auth/verify-otp', data)
+        return response.data.data
+    } catch(err) {
+        const errMessage = err?.response?.data?.message
+        throw new Error(errMessage)
+    }
+}
+
 export const logout = async ()=>{
    try{
      const response = await api.get('/auth/logout')

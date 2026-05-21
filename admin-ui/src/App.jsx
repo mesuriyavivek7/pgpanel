@@ -5,6 +5,7 @@ import Loader from './components/Loader';
 
 //Importing general components
 import Login from './pages/Login';
+import OtpVerification from './pages/OtpVerification';
 
 //Import Admin components 
 import AdminLayout from './layouts/AdminLayout';
@@ -43,6 +44,7 @@ function App() {
       <Routes>
 
         <Route path='/login' element={<Login></Login>}></Route>
+        <Route path='/verify-otp' element={<OtpVerification></OtpVerification>}></Route>
  
         {/* Admin Routes */}
         <Route path='/admin' element={<ProtectedRoute allowed={['Admin']}><AdminLayout></AdminLayout></ProtectedRoute>}
